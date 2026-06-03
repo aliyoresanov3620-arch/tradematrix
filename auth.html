@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradeMatrix - Kirish</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0f; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.card { background: #12121a; border: 1px solid #2a2a3a; border-radius: 16px; padding: 40px; width: 90%; max-width: 400px; }
+h1 { text-align: center; margin-bottom: 8px; color: #00d4aa; }
+p { text-align: center; color: #888; margin-bottom: 24px; }
+input { width: 100%; padding: 12px; background: #1a1a2e; border: 1px solid #2a2a3a; border-radius: 8px; color: #fff; margin-bottom: 12px; font-size: 14px; }
+button { width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 15px; cursor: pointer; margin-bottom: 8px; }
+.btn-login { background: #00d4aa; color: #000; font-weight: bold; }
+.btn-register { background: transparent; border: 1px solid #00d4aa; color: #00d4aa; }
+.msg { text-align: center; margin-top: 12px; font-size: 13px; color: #00d4aa; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🚀 TradeMatrix</h1>
+  <p>Professional Trading Suite</p>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Parol">
+  <button class="btn-login" onclick="login()">Kirish</button>
+  <button class="btn-register" onclick="register()">Ro'yxatdan o'tish</button>
+  <div class="msg" id="msg"></div>
+</div>
+<script>
+const sb = window.supabase.createClient(
+  'https://qvenslskfdhnjckzxipj.supabase.co',
+  'sb_publishable_ArcsmhTCD4s1KSnYOlnyFQ_RvGqsW0P'
+);
+async function login() {
+  const e = document.getElementById('email').value;
+  const p = document.getElementById('password').value;
+  const { error } = await sb.auth.signInWithPassword({ email: e, password: p });
+  if (error) { document.getElementById('msg').innerText = '❌ ' + error.message; }
+  else { window.location.href = '/'; }
+}
+async function register() {
+  const e = document.getElementById('email').value;
+  const p = document.getElementById('password').value;
+  const { error } = await sb.auth.signUp({ email: e, password: p });
+  if (error) { document.getElementById('msg').innerText = '❌ ' + error.message; }
+  else { document.getElementById('msg').innerText = '✅ Email tasdiqlang!'; }
+}
+</script>
+</body>
+</html>
