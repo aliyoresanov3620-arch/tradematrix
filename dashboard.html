@@ -94,6 +94,7 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
 .modal-title{font-size:15px;font-weight:600;margin-bottom:14px}
 .modal-btns{display:flex;gap:8px;margin-top:6px}
 
+
 /* Bottom Nav */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,16,0.97);border-top:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 0 12px;z-index:100}
 .nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#555;cursor:pointer;font-size:10px;padding:4px}
@@ -121,6 +122,7 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
 
 <div class="content">
 
+  <!-- HOME -->
   <div class="section active" id="sec-home">
     <div class="stats-grid">
       <div class="stat-card">
@@ -168,8 +170,10 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
     </div>
   </div>
 
+  <!-- JOURNAL -->
   <div class="section" id="sec-journal">
 
+    <!-- Account Summary Bar -->
     <div class="card" style="margin-bottom:12px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div style="font-size:13px;font-weight:700">📊 Accounts</div>
@@ -217,6 +221,7 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
       </div>
     </div>
 
+    <!-- Add Trade Form -->
     <div class="card">
       <div class="card-title" style="cursor:pointer" onclick="toggleAddForm()">➕ Yangi Savdo <span id="add-form-arrow" style="float:right;color:#555">▼</span></div>
       <div id="add-trade-form">
@@ -244,25 +249,26 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
           </div>
           <div><div style="font-size:10px;color:#666;margin-bottom:3px">Ochilish vaqti</div><input class="input" id="j-open" type="datetime-local" style="margin:0"></div>
           <div><div style="font-size:10px;color:#666;margin-bottom:3px">Yopilish vaqti</div><input class="input" id="j-close" type="datetime-local" style="margin:0"></div>
-          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Kirish narxi</div><input class="input" id="j-entry" type="number" step="any" placeholder="1.08500" style="margin:0" oninput="autoCalcRR()"></div>
-          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Stop Loss narxi</div><input class="input" id="j-sl" type="number" step="any" placeholder="1.08000" style="margin:0" oninput="autoCalcRR()"></div>
-          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Take Profit narxi</div><input class="input" id="j-tp" type="number" step="any" placeholder="1.09500" style="margin:0" oninput="autoCalcRR()"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Kirish narxi</div><input class="input" id="j-entry" type="number" step="any" placeholder="1.08500" style="margin:0" oninput="autoCalcRR();autoCalcJournal()"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Stop Loss narxi</div><input class="input" id="j-sl" type="number" step="any" placeholder="1.08000" style="margin:0" oninput="autoCalcRR();autoCalcJournal()"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Take Profit narxi</div><input class="input" id="j-tp" type="number" step="any" placeholder="1.09500" style="margin:0" oninput="autoCalcRR();autoCalcJournal()"></div>
           <div><div style="font-size:10px;color:#666;margin-bottom:3px">RR Ratio <span id="rr-auto-badge" style="color:#00d4aa;font-size:9px"></span></div>
             <input class="input" id="j-rr-display" placeholder="Auto" readonly style="margin:0;color:#a78bfa;font-weight:700;cursor:default">
           </div>
-          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Lot</div><input class="input" id="j-lot" type="number" step="0.01" placeholder="0.01" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Lot <span id="lot-auto-badge" style="color:#00d4aa;font-size:9px"></span></div><input class="input" id="j-lot" type="number" step="0.01" placeholder="0.01" style="margin:0"></div>
           <div><div style="font-size:10px;color:#666;margin-bottom:3px">Time Frame</div>
             <select class="input" id="j-tf" style="margin:0">
               <option>M1</option><option>M5</option><option>M15</option><option>M30</option><option>H1</option><option>H4</option><option>D1</option>
             </select>
           </div>
           <div><div style="font-size:10px;color:#666;margin-bottom:3px">Natija</div>
-            <select class="input" id="j-result" style="margin:0">
+            <select class="input" id="j-result" style="margin:0" onchange="autoCalcJournal()">
               <option>TAKE PROFIT</option><option>STOPLOSS</option><option>BREAKEVEN</option><option>OPEN</option>
             </select>
           </div>
-          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Gross PnL ($)</div><input class="input" id="j-profit" type="number" step="0.01" placeholder="2.55" style="margin:0"></div>
-          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Risk %</div><input class="input" id="j-risk" type="number" step="0.1" placeholder="2" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Risk summasi ($) <span style="color:#7c3aed;font-size:9px">→ Auto</span></div><input class="input" id="j-risk-dollar" type="number" step="0.01" placeholder="50" style="margin:0" oninput="autoCalcJournal()"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Gross PnL ($) <span id="pnl-auto-badge" style="color:#00d4aa;font-size:9px"></span></div><input class="input" id="j-profit" type="number" step="0.01" placeholder="2.55" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Risk % <span style="color:#00d4aa;font-size:9px">⚡ Auto</span></div><input class="input" id="j-risk" type="number" step="0.1" placeholder="2" style="margin:0;color:#a78bfa;font-weight:700" readonly></div>
           <div><div style="font-size:10px;color:#666;margin-bottom:3px">Komissiya</div><input class="input" id="j-comm" type="number" step="0.01" placeholder="0.00" style="margin:0"></div>
         </div>
         <input class="input" id="j-note" placeholder="Izoh / Setup..." style="margin-top:8px">
@@ -270,6 +276,7 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
       </div>
     </div>
 
+    <!-- PnL Chart in Journal -->
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div class="card-title" style="margin:0">📈 PnL Grafik</div>
@@ -281,11 +288,13 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
       <div class="chart-wrap" style="height:180px"><canvas id="journal-chart"></canvas></div>
     </div>
 
+    <!-- Trades Table -->
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div class="card-title" style="margin:0">📋 Trade Journal</div>
         <button class="btn-icon btn-edit" onclick="exportCSV()" style="padding:4px 10px">📥 CSV</button>
       </div>
+      <!-- Filter row -->
       <div style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px">
         <button class="filter-btn active" onclick="setFilter('all',this)">Hammasi</button>
         <button class="filter-btn" onclick="setFilter('TAKE PROFIT',this)">✅ TP</button>
@@ -308,6 +317,7 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
           </tbody>
         </table>
       </div>
+      <!-- Summary row -->
       <div id="journal-summary" style="display:none;margin-top:10px;padding:10px;background:rgba(124,58,237,0.07);border-radius:10px">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:11px">
           <div><span style="color:#666">Jami:</span> <b id="sum-total">0</b></div>
@@ -319,6 +329,7 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
     </div>
   </div>
 
+  <!-- EDIT MODAL -->
   <div class="modal-overlay" id="edit-modal" style="display:none">
     <div class="modal-box">
       <div class="modal-title">✏️ Savdoni Tahrirlash</div>
@@ -338,92 +349,104 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
   <div class="section" id="sec-risk">
     <div class="card">
       <div class="card-title">⚠️ Risk Kalkulyator</div>
-      <input class="input" id="r-balance" placeholder="Balans ($)" type="number">
-      <input class="input" id="r-risk" placeholder="Risk % (masalan: 2)" type="number">
-      <input class="input" id="r-entry" placeholder="Kirish narxi" type="number">
-      <input class="input" id="r-stop" placeholder="Stop Loss narxi" type="number">
-      <button class="btn btn-purple" onclick="calcRisk()">Hisoblash</button>
-      <div id="risk-result" class="result-box" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+        <div>
+          <div style="font-size:10px;color:#666;margin-bottom:3px">Balans ($)</div>
+          <input class="input" id="r-balance" placeholder="2500" type="number" style="margin:0" oninput="calcRiskAuto()">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#666;margin-bottom:3px">Risk summasi ($)</div>
+          <input class="input" id="r-risk-dollar" placeholder="50" type="number" style="margin:0" oninput="calcRiskAuto()">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#666;margin-bottom:3px">Kirish narxi</div>
+          <input class="input" id="r-entry" placeholder="1.08500" type="number" step="any" style="margin:0" oninput="calcRiskAuto()">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#666;margin-bottom:3px">Stop Loss narxi</div>
+          <input class="input" id="r-stop" placeholder="1.08000" type="number" step="any" style="margin:0" oninput="calcRiskAuto()">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#666;margin-bottom:3px">Take Profit narxi</div>
+          <input class="input" id="r-tp" placeholder="1.09500" type="number" step="any" style="margin:0" oninput="calcRiskAuto()">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#666;margin-bottom:3px">Valyuta juftligi</div>
+          <select class="input" id="r-pair-type" style="margin:0" onchange="calcRiskAuto()">
+            <option value="forex">Forex (EURUSD tip)</option>
+            <option value="jpy">JPY juftliklar</option>
+            <option value="gold">XAUUSD (GOLD)</option>
+          </select>
+        </div>
+      </div>
+      <div id="risk-result" class="result-box" style="margin-top:10px">
+        <div style="font-size:11px;color:#555;text-align:center;padding:8px">Yuqoridagi maydonlarni to'ldiring</div>
         <div id="risk-output"></div>
       </div>
     </div>
   </div>
 
-  <div class="section" id="sec-psychology">
-    <div class="card">
-      <div class="card-title">🧠 Bugungi Kayfiyat</div>
-      <div class="mood-grid">
-        <button class="mood-btn" onclick="setMood(this)">😤</button>
-        <button class="mood-btn" onclick="setMood(this)">😕</button>
-        <button class="mood-btn" onclick="setMood(this)">😐</button>
-        <button class="mood-btn" onclick="setMood(this)">🙂</button>
-        <button class="mood-btn" onclick="setMood(this)">😄</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">📝 Kundalik</div>
-      <textarea class="input" id="psych-note" rows="4" placeholder="Bugun nima o'rgandingiz?"></textarea>
-      <div style="margin-bottom:10px">
-        <div style="font-size:12px;color:#666;margin-bottom:4px">Ishonch: <span id="conf-val">50</span>%</div>
-        <input type="range" min="0" max="100" value="50" style="width:100%" oninput="document.getElementById('conf-val').textContent=this.value" id="confidence">
-      </div>
-      <div style="margin-bottom:10px">
-        <div style="font-size:12px;color:#666;margin-bottom:4px">Intizom: <span id="disc-val">50</span>%</div>
-        <input type="range" min="0" max="100" value="50" style="width:100%" oninput="document.getElementById('disc-val').textContent=this.value" id="discipline">
-      </div>
-      <button class="btn btn-purple" onclick="savePsych()">💾 Saqlash</button>
-    </div>
-  </div>
 
-  <div class="section" id="sec-goals">
-    <div class="card">
-      <div class="card-title">🎯 Maqsad Qo'yish</div>
-      <input class="input" id="g-monthly" placeholder="Oylik maqsad ($)" type="number">
-      <input class="input" id="g-current" placeholder="Hozirgi natija ($)" type="number">
-      <button class="btn btn-purple" onclick="setGoal()">Saqlash</button>
-    </div>
-    <div class="card" id="goal-display-card">
-      <div class="card-title">📈 Progress</div>
-      <div id="goal-display" style="color:#444;font-size:13px">Maqsad qo'yilmagan</div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-martingale">
-    <div class="card">
-      <div class="card-title">📊 Martingale Kalkulyator</div>
-      <input class="input" id="m-initial" placeholder="Boshlang'ich lot (0.01)" type="number">
-      <input class="input" id="m-multiplier" placeholder="Multiplikator (2)" type="number">
-      <input class="input" id="m-steps" placeholder="Bosqichlar soni (5)" type="number">
-      <select class="input" id="m-type">
-        <option>Klassik Martingale</option>
-        <option>Anti-Martingale</option>
-      </select>
-      <button class="btn btn-purple" onclick="calcMartingale()">Hisoblash</button>
-      <div id="martingale-result" style="margin-top:12px"></div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-margin">
-    <div class="card">
-      <div class="card-title">💰 Margin Kalkulyator</div>
-      <input class="input" id="mg-balance" placeholder="Balans ($)" type="number">
-      <input class="input" id="mg-leverage" placeholder="Leverage (100)" type="number">
-      <input class="input" id="mg-lot" placeholder="Lot hajmi (0.1)" type="number">
-      <input class="input" id="mg-price" placeholder="Narx" type="number">
-      <button class="btn btn-purple" onclick="calcMargin()">Hisoblash</button>
-      <div id="margin-result" class="result-box" style="display:none">
-        <div id="margin-output"></div>
-      </div>
-    </div>
-  </div>
-
+  <!-- SESSION -->
   <div class="section" id="sec-session">
+
+    <!-- Clock & Timezone -->
+    <div class="card" style="text-align:center;padding:20px 16px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:1px;color:#7c3aed;margin-bottom:12px">🟢 REAL VAQT SESSIYA SOATI</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px">
+        <span style="font-size:12px;color:#666">Timezone:</span>
+        <select id="sess-tz" onchange="renderSessions()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;padding:4px 10px;font-size:12px;cursor:pointer">
+          <option value="5">UTC +5 (Toshkent)</option>
+          <option value="0">UTC +0 (London)</option>
+          <option value="3">UTC +3 (Moskva)</option>
+          <option value="6">UTC +6 (Olmaota)</option>
+          <option value="-5">UTC -5 (New York)</option>
+          <option value="9">UTC +9 (Tokyo)</option>
+          <option value="11">UTC +11 (Sydney)</option>
+        </select>
+      </div>
+      <div id="sess-clock" style="font-size:52px;font-weight:800;letter-spacing:2px;font-variant-numeric:tabular-nums;color:#fff">00:00:00</div>
+      <div id="sess-date" style="font-size:12px;color:#555;margin-top:4px"></div>
+    </div>
+
+    <!-- Session Cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px" id="sessions-grid"></div>
+
+    <!-- Next Opening Times -->
     <div class="card">
-      <div class="card-title">⏰ Savdo Sessiyalari</div>
-      <div id="sessions-list"></div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:1px;color:#f59e0b;margin-bottom:12px">🟠 KEYINGI SESSIYA OCHILISH VAQTLARI</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="sessions-countdown"></div>
+    </div>
+
+    <!-- Info -->
+    <div class="card">
+      <div style="font-size:11px;font-weight:600;letter-spacing:1px;color:#7c3aed;margin-bottom:12px">🟣 SESSIYALAR HAQIDA</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;border-left:3px solid #f59e0b">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">🦘 Sydney sessiyasi</div>
+          <div style="font-size:11px;color:#666;line-height:1.6">UTC 22:00 – 07:00 · AUD juftliklari eng faol. Kam volatillik, asosan AUD/NZD, AUD/USD.</div>
+        </div>
+        <div style="padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;border-left:3px solid #ef4444">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">🗼 Tokyo sessiyasi</div>
+          <div style="font-size:11px;color:#666;line-height:1.6">UTC 00:00 – 09:00 · JPY juftliklari eng faol. USD/JPY, EUR/JPY, GBP/JPY. O'rta volatillik.</div>
+        </div>
+        <div style="padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;border-left:3px solid #3b82f6">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">🏛 London sessiyasi</div>
+          <div style="font-size:11px;color:#666;line-height:1.6">UTC 07:00 – 16:00 · Eng katta sessiya. EUR, GBP, CHF juftliklari. Yuqori volatillik, ko'p breakout.</div>
+        </div>
+        <div style="padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;border-left:3px solid #00d4aa">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">🗽 New York sessiyasi</div>
+          <div style="font-size:11px;color:#666;line-height:1.6">UTC 12:00 – 21:00 · USD eng faol. London bilan overlap (12:00–16:00) — eng kuchli vaqt!</div>
+        </div>
+        <div style="padding:12px;background:rgba(124,58,237,0.08);border-radius:10px;border-left:3px solid #7c3aed">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">⚡ London–NY Overlap</div>
+          <div style="font-size:11px;color:#666;line-height:1.6">UTC 12:00 – 16:00 · Ikki sessiya bir vaqtda ochiq. Eng yuqori likvidlik va volatillik. Eng yaxshi savdo vaqti!</div>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- MORE -->
   <div class="section" id="sec-more">
     <div class="card">
       <div class="card-title">⚙️ Sozlamalar</div>
@@ -442,6 +465,7 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
 
 </div>
 
+<!-- Bottom Nav -->
 <div class="bottom-nav">
   <button class="nav-btn active" onclick="showSection('home',this)">
     <span class="icon">🏠</span>Bosh
@@ -452,27 +476,17 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
   <button class="nav-btn" onclick="showSection('risk',this)">
     <span class="icon">⚠️</span>Risk
   </button>
-  <button class="nav-btn" onclick="showSection('psychology',this)">
-    <span class="icon">🧠</span>Psixo
+  <button class="nav-btn" onclick="showSection('session',this)">
+    <span class="icon">🌐</span>Sessiya
   </button>
   <button class="nav-btn" onclick="toggleMore()">
     <span class="icon">☰</span>Ko'proq
   </button>
 </div>
 
+<!-- More Menu -->
 <div class="more-menu" id="more-menu">
-  <div class="more-item" onclick="showSection('goals',null);toggleMore()">
-    <span class="icon">🎯</span>Maqsadlar
-  </div>
-  <div class="more-item" onclick="showSection('martingale',null);toggleMore()">
-    <span class="icon">📊</span>Martingale
-  </div>
-  <div class="more-item" onclick="showSection('margin',null);toggleMore()">
-    <span class="icon">💰</span>Margin
-  </div>
-  <div class="more-item" onclick="showSection('session',null);toggleMore()">
-    <span class="icon">⏰</span>Sessiya
-  </div>
+
   <div class="more-item" onclick="showSection('more',null);toggleMore()">
     <span class="icon">⚙️</span>Sozlamalar
   </div>
@@ -503,7 +517,7 @@ function showSection(name, btn){
   document.getElementById('sec-'+name).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  if(name==='session') renderSessions();
+  if(name==='session') renderSessions(); else if(_clockInterval){ clearInterval(_clockInterval); _clockInterval=null; }
 }
 
 function toggleMore(){
@@ -545,11 +559,14 @@ function addTrade(){
   localStorage.setItem('tm_trades', JSON.stringify(trades));
   renderTrades(); updateStats(); updateAccountDisplay();
   // Reset form
-  ['j-profit','j-comm','j-note','j-open','j-close','j-entry','j-sl','j-tp'].forEach(id=>{
+  ['j-profit','j-comm','j-note','j-open','j-close','j-entry','j-sl','j-tp','j-risk-dollar'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('j-rr-display').value='';
   document.getElementById('rr-auto-badge').textContent='';
+  document.getElementById('lot-auto-badge').textContent='';
+  document.getElementById('pnl-auto-badge').textContent='';
+  document.getElementById('j-risk').value='';
 }
 
 function renderTrades(){
@@ -646,6 +663,7 @@ function updateStats(){
   document.getElementById('total-profit').textContent = (profit>=0?'+':'')+'$'+profit.toFixed(0);
 }
 
+// Account display
 function updateAccountDisplay(){
   const acc = JSON.parse(localStorage.getItem('tm_account')||'{"broker":"","name":"Mening hisobim","type":"Demo","currency":"USD","init":0,"goal":100}');
   const profit = trades.reduce((a,t)=>a+(t.net??t.gross??t.profit??0),0);
@@ -653,6 +671,7 @@ function updateAccountDisplay(){
   const wins = trades.filter(t=>(t.net??t.gross??t.profit??0)>0).length;
   const wr = trades.length ? Math.round(wins/trades.length*100) : 0;
   const goalPct = Math.min(Math.round((profit/acc.goal)*100),100)||0;
+  // Avg RR
   const rrTrades = trades.filter(t=>t.rr && t.rr!=='—');
   let avgRR = '—';
   if(rrTrades.length){
@@ -676,6 +695,7 @@ function updateAccountDisplay(){
   document.getElementById('disp-avg-rr').textContent = avgRR;
   document.getElementById('acc-goal-bar').style.width = goalPct+'%';
   document.getElementById('acc-goal-pct').textContent = goalPct+'%';
+  // populate edit fields
   document.getElementById('acc-broker').value = acc.broker||'';
   document.getElementById('acc-name').value = acc.name;
   document.getElementById('acc-type').value = acc.type;
@@ -710,6 +730,7 @@ function toggleAddForm(){
   a.textContent = open?'▶':'▼';
 }
 
+// --- JOURNAL CHART ---
 let journalChartInstance = null;
 let chartMode = 'cumulative';
 function setChartMode(mode){
@@ -770,6 +791,7 @@ function renderJournalChart(){
   });
 }
 
+// HOME chart (pnl-chart canvas)
 let pnlChartInstance = null;
 function renderChart(){
   const canvas = document.getElementById('pnl-chart');
@@ -801,6 +823,7 @@ function setFilter(f, btn){
   renderTrades();
 }
 
+// --- DELETE ---
 function deleteTrade(id){
   if(!confirm('Bu savdoni o\'chirasizmi?'))return;
   trades = trades.filter(t=>t.id!==id);
@@ -808,6 +831,7 @@ function deleteTrade(id){
   renderTrades(); updateStats(); updateAccountDisplay(); renderChart();
 }
 
+// --- EDIT ---
 function openEdit(id){
   const t = trades.find(x=>x.id===id);
   if(!t) return;
@@ -839,6 +863,7 @@ function saveEdit(){
   renderTrades(); updateStats(); updateAccountDisplay(); closeModal();
 }
 
+// --- CSV EXPORT ---
 function exportCSV(){
   if(!trades.length){ alert('Eksport qilish uchun savdo yo\'q!'); return; }
   const header = 'Juftlik,Yo\'nalish,Ochilish,Yopilish,Lot,TF,Sessiya,Natija,Gross PnL,Net PnL,Risk%,RR,Izoh,Sana';
@@ -855,21 +880,119 @@ function exportCSV(){
   a.click();
 }
 
-function calcRisk(){
-  const bal=parseFloat(document.getElementById('r-balance').value);
-  const risk=parseFloat(document.getElementById('r-risk').value);
-  const entry=parseFloat(document.getElementById('r-entry').value);
-  const stop=parseFloat(document.getElementById('r-stop').value);
-  if(!bal||!risk||!entry||!stop)return;
-  const riskAmt=bal*risk/100;
-  const pips=Math.abs(entry-stop);
-  const lot=riskAmt/(pips*10);
-  document.getElementById('risk-result').style.display='block';
-  document.getElementById('risk-output').innerHTML=`
-    <div class="result-row"><span style="color:#888">Risk miqdori</span><b class="down">$${riskAmt.toFixed(2)}</b></div>
-    <div class="result-row"><span style="color:#888">Lot hajmi</span><b class="up">${lot.toFixed(2)}</b></div>
-    <div class="result-row"><span style="color:#888">TP (1:2)</span><b class="up">$${(riskAmt*2).toFixed(2)}</b></div>
+function getPipValue(pairType){
+  // Returns pip value per 1 standard lot (100,000 units) in USD
+  if(pairType==='jpy') return 1000;   // per 0.01 pip movement * 100000
+  if(pairType==='gold') return 100;   // XAUUSD: 1 point = $1 per 0.01 lot → $100 per lot
+  return 10; // Default forex: 1 pip = $10 per standard lot (EUR/USD etc)
+}
+
+function calcLotSize(riskDollar, entryPrice, stopPrice, pairType){
+  const slDistance = Math.abs(entryPrice - stopPrice);
+  if(!slDistance) return null;
+  let pipSize, pipVal;
+  if(pairType==='jpy'){
+    pipSize = 0.01;
+    pipVal = 1000; // $1000 per lot per 1 pip
+  } else if(pairType==='gold'){
+    pipSize = 0.01;
+    pipVal = 100; // XAUUSD $100 per lot per $0.01
+  } else {
+    pipSize = 0.0001;
+    pipVal = 10; // standard forex $10 per lot per pip
+  }
+  const pips = slDistance / pipSize;
+  const lot = riskDollar / (pips * pipVal);
+  return Math.max(0.01, Math.round(lot * 100) / 100);
+}
+
+function calcRiskAuto(){
+  const bal = parseFloat(document.getElementById('r-balance').value);
+  const riskDollar = parseFloat(document.getElementById('r-risk-dollar').value);
+  const entry = parseFloat(document.getElementById('r-entry').value);
+  const stop = parseFloat(document.getElementById('r-stop').value);
+  const tp = parseFloat(document.getElementById('r-tp').value);
+  const pairType = document.getElementById('r-pair-type').value;
+  const outputEl = document.getElementById('risk-output');
+
+  if(!riskDollar || !entry || !stop){
+    outputEl.innerHTML = '';
+    return;
+  }
+
+  const riskPct = bal ? (riskDollar / bal * 100) : null;
+  const lot = calcLotSize(riskDollar, entry, stop, pairType);
+
+  let tpProfit = null;
+  if(tp && lot){
+    const slDist = Math.abs(entry - stop);
+    const tpDist = Math.abs(tp - entry);
+    tpProfit = (tpDist / slDist) * riskDollar;
+  }
+
+  const rr = tp ? (Math.abs(tp - entry) / Math.abs(entry - stop)).toFixed(2) : null;
+
+  outputEl.innerHTML = `
+    <div class="result-row"><span style="color:#888">Risk summasi</span><b class="down">$${riskDollar.toFixed(2)}</b></div>
+    ${riskPct !== null ? `<div class="result-row"><span style="color:#888">Risk %</span><b style="color:#a78bfa">${riskPct.toFixed(2)}%</b></div>` : ''}
+    <div class="result-row"><span style="color:#888">Lot hajmi</span><b class="up">${lot !== null ? lot.toFixed(2) : '—'}</b></div>
+    ${rr ? `<div class="result-row"><span style="color:#888">Risk:Reward</span><b style="color:#a78bfa">1:${rr}</b></div>` : ''}
+    ${tpProfit !== null ? `<div class="result-row"><span style="color:#888">TP da foyda</span><b class="up">$${tpProfit.toFixed(2)}</b></div>` : ''}
   `;
+}
+
+// Keep old calcRisk for backward compat (unused but referenced in old button if any)
+function calcRisk(){}
+
+function autoCalcJournal(){
+  const riskDollar = parseFloat(document.getElementById('j-risk-dollar').value);
+  const entry = parseFloat(document.getElementById('j-entry').value);
+  const sl = parseFloat(document.getElementById('j-sl').value);
+  const tp = parseFloat(document.getElementById('j-tp').value);
+  const result = document.getElementById('j-result').value;
+
+  // Determine pair type from selected pair
+  const pair = document.getElementById('j-pair').value || '';
+  let pairType = 'forex';
+  if(pair.includes('JPY') || pair.includes('jpy')) pairType = 'jpy';
+  if(pair.includes('XAU') || pair.includes('XAG') || pair.includes('XPT')) pairType = 'gold';
+
+  // Get balance from account settings
+  const accData = JSON.parse(localStorage.getItem('tm_account') || '{}');
+  const bal = accData.init ? parseFloat(accData.init) : null;
+
+  if(!riskDollar) return;
+
+  // Auto fill Risk %
+  if(bal && bal > 0){
+    document.getElementById('j-risk').value = (riskDollar / bal * 100).toFixed(2);
+  }
+
+  // Auto fill Lot
+  if(entry && sl){
+    const lot = calcLotSize(riskDollar, entry, sl, pairType);
+    if(lot){
+      document.getElementById('j-lot').value = lot.toFixed(2);
+      document.getElementById('lot-auto-badge').textContent = '⚡ Auto';
+    }
+
+    // Auto fill Gross PnL
+    const slDist = Math.abs(entry - sl);
+    if(slDist > 0){
+      if(result === 'STOPLOSS'){
+        document.getElementById('j-profit').value = (-riskDollar).toFixed(2);
+        document.getElementById('pnl-auto-badge').textContent = '⚡ Auto';
+      } else if(result === 'TAKE PROFIT' && tp){
+        const tpDist = Math.abs(tp - entry);
+        const tpProfit = (tpDist / slDist) * riskDollar;
+        document.getElementById('j-profit').value = tpProfit.toFixed(2);
+        document.getElementById('pnl-auto-badge').textContent = '⚡ Auto';
+      } else if(result === 'BREAKEVEN'){
+        document.getElementById('j-profit').value = '0.00';
+        document.getElementById('pnl-auto-badge').textContent = '⚡ Auto';
+      }
+    }
+  }
 }
 
 function setMood(btn){
@@ -934,27 +1057,112 @@ function calcMargin(){
   `;
 }
 
-function renderSessions(){
-  const now=new Date();
-  const utcH=now.getUTCHours();
-  const sess=[
-    {n:'🌏 Tokyo',o:0,c:9},
-    {n:'🌍 London',o:8,c:17},
-    {n:'🌎 New York',o:13,c:22},
-    {n:'🔄 Overlap',o:13,c:17},
-  ];
-  document.getElementById('sessions-list').innerHTML=sess.map(s=>{
-    const active=utcH>=s.o&&utcH<s.c;
-    return `<div class="session-card" style="border:1px solid ${active?'rgba(0,212,170,0.3)':'rgba(255,255,255,0.06)'}">
-      <div>
-        <div style="font-size:14px;font-weight:600">${s.n}</div>
-        <div style="font-size:11px;color:#666">${s.o}:00 - ${s.c}:00 UTC</div>
-      </div>
-      <span class="badge ${active?'badge-green':'badge-red'}">${active?'🟢 Ochiq':'🔴 Yopiq'}</span>
-    </div>`;
-  }).join('');
+let _clockInterval = null;
+
+const SESSIONS_DATA = [
+  {id:'sydney', name:'Sydney',  icon:'🦘', color:'#f59e0b', utcOpen:22, utcClose:7,  info:'AUD/NZD, AUD/USD'},
+  {id:'tokyo',  name:'Tokyo',   icon:'🗼', color:'#ef4444', utcOpen:0,  utcClose:9,  info:'USD/JPY, EUR/JPY'},
+  {id:'london', name:'London',  icon:'🏛', color:'#3b82f6', utcOpen:7,  utcClose:16, info:'EUR/GBP/CHF'},
+  {id:'newyork',name:'New York',icon:'🗽', color:'#00d4aa', utcOpen:12, utcClose:21, info:'USD pairs'},
+];
+
+function isSessionActive(sess, utcH, utcM){
+  const nowMins = utcH*60+utcM;
+  const o = sess.utcOpen*60;
+  const c = sess.utcClose*60;
+  if(o > c){ return nowMins>=o || nowMins<c; } // overnight
+  return nowMins>=o && nowMins<c;
 }
 
+function minsUntilOpen(sess, utcH, utcM){
+  const nowMins = utcH*60+utcM;
+  const openMins = sess.utcOpen*60;
+  let diff = openMins - nowMins;
+  if(diff<0) diff+=1440;
+  return diff;
+}
+
+function fmtCountdown(totalMins){
+  const h=Math.floor(totalMins/60);
+  const m=totalMins%60;
+  return `<span style="font-size:22px;font-weight:800;color:#7c3aed">${h}s</span> <span style="font-size:22px;font-weight:800;color:#a78bfa">${m}d</span>`;
+}
+
+function renderSessions(){
+  if(_clockInterval) clearInterval(_clockInterval);
+
+  function tick(){
+    const tzEl = document.getElementById('sess-tz');
+    if(!tzEl) return;
+    const tzOffset = parseInt(tzEl.value)||5;
+    const now = new Date();
+    const utcMs = now.getTime() + now.getTimezoneOffset()*60000;
+    const local = new Date(utcMs + tzOffset*3600000);
+    const utcH = now.getUTCHours();
+    const utcM = now.getUTCMinutes();
+
+    // Clock
+    const clockEl = document.getElementById('sess-clock');
+    const dateEl  = document.getElementById('sess-date');
+    if(clockEl) clockEl.textContent =
+      String(local.getHours()).padStart(2,'0')+':'+
+      String(local.getMinutes()).padStart(2,'0')+':'+
+      String(local.getSeconds()).padStart(2,'0');
+    if(dateEl){
+      const days=['yakshanba','dushanba','seshanba','chorshanba','payshanba','juma','shanba'];
+      const months=['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentyabr','oktyabr','noyabr','dekabr'];
+      dateEl.textContent=days[local.getDay()]+', '+local.getDate()+'-'+months[local.getMonth()]+', '+local.getFullYear();
+    }
+
+    // Session grid
+    const grid = document.getElementById('sessions-grid');
+    if(grid) grid.innerHTML = SESSIONS_DATA.map(s=>{
+      const active = isSessionActive(s, utcH, utcM);
+      const localOpen  = ((s.utcOpen  + tzOffset + 24)%24);
+      const localClose = ((s.utcClose + tzOffset + 24)%24);
+      const timeStr = String(localOpen).padStart(2,'0')+':00';
+      const closeStr= String(localClose).padStart(2,'0')+':00';
+      const mins = minsUntilOpen(s, utcH, utcM);
+      const h2=Math.floor(mins/60), m2=mins%60;
+      const countdownTxt = active ? '' :
+        `<div style="font-size:10px;color:#666;margin-top:4px">⏱ ${h2}s ${m2}d da ochiladi</div>`;
+      return `<div style="background:${active?'rgba(0,212,170,0.06)':'rgba(255,255,255,0.03)'};border:2px solid ${active?s.color:'rgba(255,255,255,0.07)'};border-radius:14px;padding:14px;transition:all 0.3s">
+        <div style="font-size:18px;margin-bottom:4px">${s.icon} <span style="font-size:13px;font-weight:700;color:${active?s.color:'#ccc'}">${s.name}</span></div>
+        <div style="font-size:26px;font-weight:800;color:${active?s.color:'#aaa'};margin:4px 0">${timeStr}</div>
+        <div style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:${active?'rgba(0,212,170,0.15)':'rgba(255,255,255,0.06)'};color:${active?'#00d4aa':'#666'};margin-bottom:4px">${active?'OCHIQ':'YOPIQ'}</div>
+        ${countdownTxt}
+        <div style="font-size:10px;color:#444;margin-top:4px">UTC ${s.utcOpen}:00–${s.utcClose}:00</div>
+      </div>`;
+    }).join('');
+
+    // Next opening times for closed sessions
+    const cd = document.getElementById('sessions-countdown');
+    if(cd){
+      const closed = SESSIONS_DATA.filter(s=>!isSessionActive(s,utcH,utcM));
+      cd.innerHTML = closed.map(s=>{
+        const mins = minsUntilOpen(s, utcH, utcM);
+        const h2 = Math.floor(mins/60), m2 = mins%60;
+        // Calculate local open time
+        const localOpenH = ((s.utcOpen + tzOffset) % 24 + 24) % 24;
+        const localOpenStr = String(localOpenH).padStart(2,'0') + ':00';
+        // Calculate actual clock time when it opens
+        const openDate = new Date(utcMs + tzOffset*3600000 + mins*60000);
+        const openTimeStr = String(openDate.getHours()).padStart(2,'0')+':'+String(openDate.getMinutes()).padStart(2,'0');
+        return `<div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:12px">
+          <div style="font-size:11px;color:#666;margin-bottom:6px">${s.icon} ${s.name}</div>
+          <div style="font-size:22px;font-weight:800;color:#7c3aed">${openTimeStr}</div>
+          <div style="font-size:10px;color:#555;margin-top:3px">da ochiladi</div>
+          <div style="font-size:10px;color:#444;margin-top:2px">${h2}s ${m2}d qoldi</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  tick();
+  _clockInterval = setInterval(tick, 1000);
+}
+
+// --- PAIR LISTS ---
 const PAIRS = {
   major: ['EURUSD','GBPUSD','USDJPY','USDCHF','AUDUSD','USDCAD','NZDUSD'],
   minor: ['EURGBP','EURJPY','GBPJPY','AUDJPY','CADJPY','CHFJPY','EURNZD','GBPAUD','EURCAD','AUDCAD','AUDNZD','GBPNZD','GBPCAD','NZDJPY'],
@@ -968,6 +1176,7 @@ function updatePairList(){
   sel.innerHTML = PAIRS[cat].map(p=>`<option value="${p}">${p}</option>`).join('');
 }
 
+// --- AUTO RR CALC ---
 function calcRRValue(entry, sl, tp){
   if(!entry||!sl||!tp) return null;
   const risk = Math.abs(entry - sl);
@@ -1005,4 +1214,3 @@ if(saved.pct){
 </script>
 </body>
 </html>
-
