@@ -7,114 +7,71 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#080810;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;min-height:100vh}
-.sidebar{width:240px;background:rgba(255,255,255,0.03);border-right:1px solid rgba(255,255,255,0.07);padding:24px 16px;display:flex;flex-direction:column;position:fixed;height:100vh;z-index:50}
-.logo{font-size:18px;font-weight:700;margin-bottom:32px;padding:0 8px}
+body{background:#080810;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+nav{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(8,8,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:100}
+.logo{font-size:17px;font-weight:700}
 .logo span{color:#7c3aed}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:#666;font-size:14px;margin-bottom:4px;transition:all 0.2s;text-decoration:none}
-.nav-item:hover,.nav-item.active{background:rgba(124,58,237,0.15);color:#fff}
-.nav-item.active{border-left:3px solid #7c3aed}
-.nav-icon{font-size:18px;width:24px}
-.sidebar-bottom{margin-top:auto}
-.main{margin-left:240px;flex:1;padding:24px}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-.topbar h1{font-size:22px;font-weight:700}
-.user-info{display:flex;align-items:center;gap:10px}
-.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#00d4aa);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-.stat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px}
-.stat-label{font-size:12px;color:#666;margin-bottom:8px}
-.stat-value{font-size:28px;font-weight:700;margin-bottom:4px}
-.stat-change{font-size:12px}
+.user-info{display:flex;align-items:center;gap:8px}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#00d4aa);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.content{padding:72px 16px 80px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.stat-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px}
+.stat-label{font-size:11px;color:#666;margin-bottom:6px}
+.stat-value{font-size:24px;font-weight:700}
+.stat-change{font-size:11px;margin-top:4px}
 .up{color:#00d4aa}
 .down{color:#ff4444}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px}
-.card-title{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;margin-bottom:12px}
+.card-title{font-size:14px;font-weight:600;margin-bottom:14px}
+.section{display:none}
+.section.active{display:block}
+.input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;margin-bottom:10px}
+.input:focus{outline:none;border-color:#7c3aed}
+select.input option{background:#1a1a2e}
+.btn{padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;width:100%}
 .btn-purple{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff}
-.btn-ghost{background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1)}
-table{width:100%;border-collapse:collapse}
-th{font-size:11px;color:#444;text-align:left;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05)}
-td{font-size:13px;color:#ccc;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.03)}
-tr:hover td{background:rgba(255,255,255,0.02)}
-.badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.btn-ghost{background:rgba(255,255,255,0.06);color:#888}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:#444;text-align:left;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.05)}
+td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.badge{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600}
 .badge-green{background:rgba(0,212,170,0.15);color:#00d4aa}
 .badge-red{background:rgba(255,68,68,0.15);color:#ff4444}
-.badge-purple{background:rgba(124,58,237,0.15);color:#a78bfa}
 .progress-bar{background:rgba(255,255,255,0.07);border-radius:10px;height:6px;margin-top:8px}
 .progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,#7c3aed,#00d4aa)}
 .mood-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.mood-btn{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.07);background:transparent;color:#fff;cursor:pointer;font-size:20px;transition:all 0.2s}
-.mood-btn:hover,.mood-btn.selected{background:rgba(124,58,237,0.2);border-color:#7c3aed}
-.input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;margin-bottom:10px}
-.input:focus{outline:none;border-color:#7c3aed}
-select.input option{background:#1a1a2e}
-.section{display:none}
-.section.active{display:block}
-@media(max-width:768px){
-.sidebar{transform:translateX(-100%);transition:transform 0.3s}
-.sidebar.open{transform:translateX(0)}
-.main{margin-left:0}
-.stats-grid{grid-template-columns:1fr 1fr}
-.grid-2{grid-template-columns:1fr}
-.mob-menu{display:flex!important}
-}
-.mob-menu{display:none;background:none;border:none;color:#fff;font-size:24px;cursor:pointer}
+.mood-btn{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.07);background:transparent;color:#fff;cursor:pointer;font-size:22px}
+.mood-btn.selected{background:rgba(124,58,237,0.2);border-color:#7c3aed}
+.result-box{margin-top:12px;padding:14px;background:rgba(124,58,237,0.1);border-radius:10px;font-size:13px}
+.result-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.session-card{display:flex;align-items:center;justify-content:space-between;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px}
+
+/* Bottom Nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,16,0.97);border-top:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 0 12px;z-index:100}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#555;cursor:pointer;font-size:10px;padding:4px}
+.nav-btn.active{color:#7c3aed}
+.nav-btn .icon{font-size:20px}
+.more-menu{position:fixed;bottom:70px;left:0;right:0;background:rgba(12,12,20,0.98);border-top:1px solid rgba(255,255,255,0.07);padding:16px;display:none;z-index:99}
+.more-menu.open{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.more-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;background:rgba(255,255,255,0.04);border-radius:12px;cursor:pointer;font-size:12px;color:#888}
+.more-item .icon{font-size:24px}
+.more-item:hover{background:rgba(124,58,237,0.15);color:#fff}
 </style>
 </head>
 <body>
 
-<div class="sidebar" id="sidebar">
-  <div class="logo">Trade<span>Matrix</span> <span style="font-size:11px;color:#666;font-weight:400">Pro</span></div>
-  <a class="nav-item active" onclick="showSection('home')" href="#">
-    <span class="nav-icon">🏠</span> Dashboard
-  </a>
-  <a class="nav-item" onclick="showSection('journal')" href="#">
-    <span class="nav-icon">📔</span> Savdo Jurnali
-  </a>
-  <a class="nav-item" onclick="showSection('risk')" href="#">
-    <span class="nav-icon">⚠️</span> Xavf Tahlili
-  </a>
-  <a class="nav-item" onclick="showSection('psychology')" href="#">
-    <span class="nav-icon">🧠</span> Psixologiya
-  </a>
-  <a class="nav-item" onclick="showSection('goals')" href="#">
-    <span class="nav-icon">🎯</span> Maqsadlar
-  </a>
-  <a class="nav-item" onclick="showSection('martingale')" href="#">
-    <span class="nav-icon">📊</span> Martingale
-  </a>
-  <a class="nav-item" onclick="showSection('margin')" href="#">
-    <span class="nav-icon">💰</span> Margin
-  </a>
-  <a class="nav-item" onclick="showSection('session')" href="#">
-    <span class="nav-icon">⏰</span> Sessiya
-  </a>
-  <div class="sidebar-bottom">
-    <a class="nav-item" href="/landing.html">
-      <span class="nav-icon">🌐</span> Bosh Sahifa
-    </a>
-    <a class="nav-item" onclick="logout()" href="#">
-      <span class="nav-icon">🚪</span> Chiqish
-    </a>
+<nav>
+  <div class="logo">Trade<span>Matrix</span></div>
+  <div class="user-info">
+    <div style="text-align:right">
+      <div style="font-size:12px;font-weight:600" id="user-name">...</div>
+      <div style="font-size:10px;color:#7c3aed" id="user-plan">Free</div>
+    </div>
+    <div class="avatar" id="user-avatar">U</div>
   </div>
-</div>
+</nav>
 
-<div class="main">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:12px">
-      <button class="mob-menu" onclick="toggleSidebar()">☰</button>
-      <h1 id="page-title">Dashboard</h1>
-    </div>
-    <div class="user-info">
-      <div style="text-align:right">
-        <div style="font-size:13px;font-weight:600" id="user-name">Foydalanuvchi</div>
-        <div style="font-size:11px;color:#666" id="user-plan">Free</div>
-      </div>
-      <div class="avatar" id="user-avatar">U</div>
-    </div>
-  </div>
+<div class="content">
 
   <!-- HOME -->
   <div class="section active" id="sec-home">
@@ -122,72 +79,61 @@ select.input option{background:#1a1a2e}
       <div class="stat-card">
         <div class="stat-label">Jami Savdolar</div>
         <div class="stat-value" id="total-trades">0</div>
-        <div class="stat-change up">Bu oy</div>
+        <div class="stat-change" style="color:#666">Bu oy</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Win Rate</div>
         <div class="stat-value up" id="win-rate">0%</div>
-        <div class="stat-change">G'alaba foizi</div>
+        <div class="stat-change" style="color:#666">G'alaba foizi</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Jami Profit</div>
-        <div class="stat-value" id="total-profit">$0</div>
-        <div class="stat-change up">↑ Bu oy</div>
+        <div class="stat-value up" id="total-profit">$0</div>
+        <div class="stat-change" style="color:#666">Umumiy</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Aktiv Tarif</div>
-        <div class="stat-value" style="font-size:20px" id="active-plan">Free</div>
-        <div class="stat-change"><a href="/landing.html#pricing" style="color:#7c3aed">Yangilash →</a></div>
+        <div class="stat-label">Tarif</div>
+        <div class="stat-value" style="font-size:18px;color:#a78bfa">Free</div>
+        <div class="stat-change"><a href="/landing.html#pricing" style="color:#7c3aed;font-size:11px">Yangilash →</a></div>
       </div>
     </div>
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title">📔 So'nggi Savdolar</div>
-        <table>
-          <tr><th>Juftlik</th><th>Natija</th><th>Profit</th><th>Sana</th></tr>
-          <tbody id="recent-trades">
-            <tr><td colspan="4" style="text-align:center;color:#444;padding:20px">Hali savdo yo'q</td></tr>
-          </tbody>
-        </table>
+    <div class="card">
+      <div class="card-title">📔 So'nggi Savdolar</div>
+      <table>
+        <tr><th>Juftlik</th><th>Natija</th><th>Profit</th><th>Sana</th></tr>
+        <tbody id="recent-trades">
+          <tr><td colspan="4" style="text-align:center;color:#444;padding:16px">Hali savdo yo'q</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 Oylik Maqsad</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:#888">Progress</span>
+        <span id="goal-percent">0%</span>
       </div>
-      <div class="card">
-        <div class="card-title">🎯 Oylik Maqsad</div>
-        <div style="margin-bottom:12px">
-          <div style="display:flex;justify-content:space-between;font-size:13px">
-            <span style="color:#888">Progress</span>
-            <span id="goal-percent">0%</span>
-          </div>
-          <div class="progress-bar"><div class="progress-fill" id="goal-bar" style="width:0%"></div></div>
-        </div>
-        <div style="font-size:13px;color:#666">Maqsad qo'yish uchun "Maqsadlar" bo'limiga o'ting</div>
-      </div>
+      <div class="progress-bar"><div class="progress-fill" id="goal-bar" style="width:0%"></div></div>
     </div>
   </div>
 
   <!-- JOURNAL -->
   <div class="section" id="sec-journal">
-    <div class="card" style="margin-bottom:16px">
+    <div class="card">
       <div class="card-title">➕ Yangi Savdo</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <input class="input" id="j-pair" placeholder="Juftlik (EURUSD)">
-        <select class="input" id="j-type">
-          <option>Buy</option>
-          <option>Sell</option>
-        </select>
-        <input class="input" id="j-entry" placeholder="Kirish narxi" type="number">
-        <input class="input" id="j-exit" placeholder="Chiqish narxi" type="number">
-        <input class="input" id="j-lot" placeholder="Lot hajmi" type="number">
-        <input class="input" id="j-profit" placeholder="Profit ($)" type="number">
-      </div>
+      <input class="input" id="j-pair" placeholder="Juftlik (EURUSD)">
+      <select class="input" id="j-type"><option>Buy</option><option>Sell</option></select>
+      <input class="input" id="j-entry" placeholder="Kirish narxi" type="number">
+      <input class="input" id="j-exit" placeholder="Chiqish narxi" type="number">
+      <input class="input" id="j-profit" placeholder="Profit ($)" type="number">
       <input class="input" id="j-note" placeholder="Izoh...">
-      <button class="btn btn-purple" onclick="addTrade()">Saqlash</button>
+      <button class="btn btn-purple" onclick="addTrade()">💾 Saqlash</button>
     </div>
     <div class="card">
       <div class="card-title">📋 Savdo Tarixi</div>
       <table>
-        <tr><th>Juftlik</th><th>Turi</th><th>Profit</th><th>Izoh</th><th>Sana</th></tr>
+        <tr><th>Juftlik</th><th>Tur</th><th>Profit</th><th>Sana</th></tr>
         <tbody id="trades-list">
-          <tr><td colspan="5" style="text-align:center;color:#444;padding:20px">Hali savdo yo'q</td></tr>
+          <tr><td colspan="4" style="text-align:center;color:#444;padding:16px">Hali savdo yo'q</td></tr>
         </tbody>
       </table>
     </div>
@@ -195,83 +141,57 @@ select.input option{background:#1a1a2e}
 
   <!-- RISK -->
   <div class="section" id="sec-risk">
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title">⚠️ Risk Kalkulyator</div>
-        <input class="input" id="r-balance" placeholder="Hisob balansi ($)" type="number">
-        <input class="input" id="r-risk" placeholder="Risk foizi (%)" type="number">
-        <input class="input" id="r-entry" placeholder="Kirish narxi" type="number">
-        <input class="input" id="r-stop" placeholder="Stop Loss narxi" type="number">
-        <button class="btn btn-purple" onclick="calcRisk()">Hisoblash</button>
-        <div id="risk-result" style="margin-top:16px;padding:16px;background:rgba(124,58,237,0.1);border-radius:10px;display:none">
-          <div style="font-size:13px;color:#888;margin-bottom:8px">Natija:</div>
-          <div id="risk-output"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📊 Risk Statistika</div>
-        <div style="space-y:12px">
-          <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-            <span style="color:#888;font-size:13px">Maksimal risk</span>
-            <span style="font-size:13px">2%</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-            <span style="color:#888;font-size:13px">Risk/Reward</span>
-            <span style="font-size:13px">1:2</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:10px 0">
-            <span style="color:#888;font-size:13px">Kunlik limit</span>
-            <span style="font-size:13px">3 savdo</span>
-          </div>
-        </div>
+    <div class="card">
+      <div class="card-title">⚠️ Risk Kalkulyator</div>
+      <input class="input" id="r-balance" placeholder="Balans ($)" type="number">
+      <input class="input" id="r-risk" placeholder="Risk % (masalan: 2)" type="number">
+      <input class="input" id="r-entry" placeholder="Kirish narxi" type="number">
+      <input class="input" id="r-stop" placeholder="Stop Loss narxi" type="number">
+      <button class="btn btn-purple" onclick="calcRisk()">Hisoblash</button>
+      <div id="risk-result" class="result-box" style="display:none">
+        <div id="risk-output"></div>
       </div>
     </div>
   </div>
 
   <!-- PSYCHOLOGY -->
   <div class="section" id="sec-psychology">
-    <div class="card" style="margin-bottom:16px">
+    <div class="card">
       <div class="card-title">🧠 Bugungi Kayfiyat</div>
       <div class="mood-grid">
-        <button class="mood-btn" onclick="setMood(this,'😤')">😤</button>
-        <button class="mood-btn" onclick="setMood(this,'😕')">😕</button>
-        <button class="mood-btn" onclick="setMood(this,'😐')">😐</button>
-        <button class="mood-btn" onclick="setMood(this,'🙂')">🙂</button>
-        <button class="mood-btn" onclick="setMood(this,'😄')">😄</button>
+        <button class="mood-btn" onclick="setMood(this)">😤</button>
+        <button class="mood-btn" onclick="setMood(this)">😕</button>
+        <button class="mood-btn" onclick="setMood(this)">😐</button>
+        <button class="mood-btn" onclick="setMood(this)">🙂</button>
+        <button class="mood-btn" onclick="setMood(this)">😄</button>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">📝 Savdo Kundaligi</div>
-      <textarea class="input" id="psych-note" rows="4" placeholder="Bugun qanday his qildingiz? Nima o'rgandingiz?"></textarea>
-      <div style="display:flex;gap:10px;margin-top:4px">
-        <div style="flex:1">
-          <div style="font-size:12px;color:#666;margin-bottom:6px">Ishonch darajasi</div>
-          <input type="range" min="0" max="100" value="50" id="confidence" style="width:100%">
-        </div>
-        <div style="flex:1">
-          <div style="font-size:12px;color:#666;margin-bottom:6px">Intizom darajasi</div>
-          <input type="range" min="0" max="100" value="50" id="discipline" style="width:100%">
-        </div>
+      <div class="card-title">📝 Kundalik</div>
+      <textarea class="input" id="psych-note" rows="4" placeholder="Bugun nima o'rgandingiz?"></textarea>
+      <div style="margin-bottom:10px">
+        <div style="font-size:12px;color:#666;margin-bottom:4px">Ishonch: <span id="conf-val">50</span>%</div>
+        <input type="range" min="0" max="100" value="50" style="width:100%" oninput="document.getElementById('conf-val').textContent=this.value" id="confidence">
       </div>
-      <button class="btn btn-purple" style="margin-top:12px" onclick="savePsych()">Saqlash</button>
+      <div style="margin-bottom:10px">
+        <div style="font-size:12px;color:#666;margin-bottom:4px">Intizom: <span id="disc-val">50</span>%</div>
+        <input type="range" min="0" max="100" value="50" style="width:100%" oninput="document.getElementById('disc-val').textContent=this.value" id="discipline">
+      </div>
+      <button class="btn btn-purple" onclick="savePsych()">💾 Saqlash</button>
     </div>
   </div>
 
   <!-- GOALS -->
   <div class="section" id="sec-goals">
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title">🎯 Maqsad Qo'yish</div>
-        <input class="input" id="g-monthly" placeholder="Oylik maqsad ($)" type="number">
-        <input class="input" id="g-current" placeholder="Hozirgi natija ($)" type="number">
-        <button class="btn btn-purple" onclick="setGoal()">Saqlash</button>
-      </div>
-      <div class="card">
-        <div class="card-title">📈 Progress</div>
-        <div id="goal-display">
-          <div style="text-align:center;color:#444;padding:20px">Maqsad qo'yilmagan</div>
-        </div>
-      </div>
+    <div class="card">
+      <div class="card-title">🎯 Maqsad Qo'yish</div>
+      <input class="input" id="g-monthly" placeholder="Oylik maqsad ($)" type="number">
+      <input class="input" id="g-current" placeholder="Hozirgi natija ($)" type="number">
+      <button class="btn btn-purple" onclick="setGoal()">Saqlash</button>
+    </div>
+    <div class="card" id="goal-display-card">
+      <div class="card-title">📈 Progress</div>
+      <div id="goal-display" style="color:#444;font-size:13px">Maqsad qo'yilmagan</div>
     </div>
   </div>
 
@@ -279,17 +199,15 @@ select.input option{background:#1a1a2e}
   <div class="section" id="sec-martingale">
     <div class="card">
       <div class="card-title">📊 Martingale Kalkulyator</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <input class="input" id="m-initial" placeholder="Boshlang'ich lot" type="number">
-        <input class="input" id="m-multiplier" placeholder="Multiplikator" type="number">
-        <input class="input" id="m-steps" placeholder="Bosqichlar soni" type="number">
-        <select class="input" id="m-type">
-          <option>Klassik Martingale</option>
-          <option>Anti-Martingale</option>
-        </select>
-      </div>
+      <input class="input" id="m-initial" placeholder="Boshlang'ich lot (0.01)" type="number">
+      <input class="input" id="m-multiplier" placeholder="Multiplikator (2)" type="number">
+      <input class="input" id="m-steps" placeholder="Bosqichlar soni (5)" type="number">
+      <select class="input" id="m-type">
+        <option>Klassik Martingale</option>
+        <option>Anti-Martingale</option>
+      </select>
       <button class="btn btn-purple" onclick="calcMartingale()">Hisoblash</button>
-      <div id="martingale-result" style="margin-top:16px"></div>
+      <div id="martingale-result" style="margin-top:12px"></div>
     </div>
   </div>
 
@@ -297,14 +215,12 @@ select.input option{background:#1a1a2e}
   <div class="section" id="sec-margin">
     <div class="card">
       <div class="card-title">💰 Margin Kalkulyator</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <input class="input" id="mg-balance" placeholder="Balans ($)" type="number">
-        <input class="input" id="mg-leverage" placeholder="Leverage (1:100)" type="number">
-        <input class="input" id="mg-lot" placeholder="Lot hajmi" type="number">
-        <input class="input" id="mg-price" placeholder="Narx" type="number">
-      </div>
+      <input class="input" id="mg-balance" placeholder="Balans ($)" type="number">
+      <input class="input" id="mg-leverage" placeholder="Leverage (100)" type="number">
+      <input class="input" id="mg-lot" placeholder="Lot hajmi (0.1)" type="number">
+      <input class="input" id="mg-price" placeholder="Narx" type="number">
       <button class="btn btn-purple" onclick="calcMargin()">Hisoblash</button>
-      <div id="margin-result" style="margin-top:16px;padding:16px;background:rgba(124,58,237,0.1);border-radius:10px;display:none">
+      <div id="margin-result" class="result-box" style="display:none">
         <div id="margin-output"></div>
       </div>
     </div>
@@ -314,229 +230,252 @@ select.input option{background:#1a1a2e}
   <div class="section" id="sec-session">
     <div class="card">
       <div class="card-title">⏰ Savdo Sessiyalari</div>
-      <div id="sessions-list" style="display:grid;gap:10px"></div>
+      <div id="sessions-list"></div>
+    </div>
+  </div>
+
+  <!-- MORE -->
+  <div class="section" id="sec-more">
+    <div class="card">
+      <div class="card-title">⚙️ Sozlamalar</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="font-size:13px">Foydalanuvchi</span>
+        <span style="font-size:13px;color:#7c3aed" id="settings-email">-</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="font-size:13px">Tarif</span>
+        <span style="font-size:13px;color:#a78bfa">Free</span>
+      </div>
+      <button class="btn btn-ghost" style="margin-top:16px" onclick="window.location.href='/landing.html'">🌐 Bosh Sahifa</button>
+      <button class="btn btn-ghost" style="margin-top:8px;color:#ff4444" onclick="logout()">🚪 Chiqish</button>
     </div>
   </div>
 
 </div>
 
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <button class="nav-btn active" onclick="showSection('home',this)">
+    <span class="icon">🏠</span>Bosh
+  </button>
+  <button class="nav-btn" onclick="showSection('journal',this)">
+    <span class="icon">📔</span>Jurnal
+  </button>
+  <button class="nav-btn" onclick="showSection('risk',this)">
+    <span class="icon">⚠️</span>Risk
+  </button>
+  <button class="nav-btn" onclick="showSection('psychology',this)">
+    <span class="icon">🧠</span>Psixo
+  </button>
+  <button class="nav-btn" onclick="toggleMore()">
+    <span class="icon">☰</span>Ko'proq
+  </button>
+</div>
+
+<!-- More Menu -->
+<div class="more-menu" id="more-menu">
+  <div class="more-item" onclick="showSection('goals',null);toggleMore()">
+    <span class="icon">🎯</span>Maqsadlar
+  </div>
+  <div class="more-item" onclick="showSection('martingale',null);toggleMore()">
+    <span class="icon">📊</span>Martingale
+  </div>
+  <div class="more-item" onclick="showSection('margin',null);toggleMore()">
+    <span class="icon">💰</span>Margin
+  </div>
+  <div class="more-item" onclick="showSection('session',null);toggleMore()">
+    <span class="icon">⏰</span>Sessiya
+  </div>
+  <div class="more-item" onclick="showSection('more',null);toggleMore()">
+    <span class="icon">⚙️</span>Sozlamalar
+  </div>
+</div>
+
 <script>
-const SUPABASE_URL = 'https://qvenslskfdhnjckzxipj.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_ArcsmhTCD4s1KSnYOlnyFQ_RvGqsW0P';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase.createClient(
+  'https://qvenslskfdhnjckzxipj.supabase.co',
+  'sb_publishable_ArcsmhTCD4s1KSnYOlnyFQ_RvGqsW0P'
+);
 
-let currentUser = null;
-let trades = JSON.parse(localStorage.getItem('tm_trades') || '[]');
+let trades = JSON.parse(localStorage.getItem('tm_trades')||'[]');
 
-// Auth
-sb.auth.getSession().then(({data}) => {
-  if(data.session) {
-    currentUser = data.session.user;
-    const name = currentUser.email.split('@')[0];
+sb.auth.getSession().then(({data})=>{
+  if(data.session){
+    const u = data.session.user;
+    const name = u.email.split('@')[0];
     document.getElementById('user-name').textContent = name;
     document.getElementById('user-avatar').textContent = name[0].toUpperCase();
-    updateStats();
+    document.getElementById('settings-email').textContent = u.email;
   }
 });
 
-function logout() {
-  sb.auth.signOut();
-  window.location.href = '/auth.html';
+function logout(){sb.auth.signOut();window.location.href='/auth.html';}
+
+function showSection(name, btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(name==='session') renderSessions();
 }
 
-// Navigation
-function showSection(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  const titles = {home:'Dashboard',journal:'Savdo Jurnali',risk:'Xavf Tahlili',psychology:'Psixologiya',goals:'Maqsadlar',martingale:'Martingale',margin:'Margin',session:'Sessiya'};
-  document.getElementById('page-title').textContent = titles[name] || name;
-  if(name === 'session') renderSessions();
-  document.getElementById('sidebar').classList.remove('open');
+function toggleMore(){
+  document.getElementById('more-menu').classList.toggle('open');
 }
 
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-}
-
-// Journal
-function addTrade() {
-  const trade = {
-    id: Date.now(),
-    pair: document.getElementById('j-pair').value || 'EURUSD',
-    type: document.getElementById('j-type').value,
-    entry: document.getElementById('j-entry').value,
-    exit: document.getElementById('j-exit').value,
-    lot: document.getElementById('j-lot').value,
-    profit: parseFloat(document.getElementById('j-profit').value) || 0,
-    note: document.getElementById('j-note').value,
-    date: new Date().toLocaleDateString('uz')
+function addTrade(){
+  const t={
+    id:Date.now(),
+    pair:document.getElementById('j-pair').value||'EURUSD',
+    type:document.getElementById('j-type').value,
+    entry:document.getElementById('j-entry').value,
+    exit:document.getElementById('j-exit').value,
+    profit:parseFloat(document.getElementById('j-profit').value)||0,
+    note:document.getElementById('j-note').value,
+    date:new Date().toLocaleDateString('uz')
   };
-  trades.unshift(trade);
-  localStorage.setItem('tm_trades', JSON.stringify(trades));
-  renderTrades();
-  updateStats();
+  trades.unshift(t);
+  localStorage.setItem('tm_trades',JSON.stringify(trades));
+  renderTrades();updateStats();
+  document.getElementById('j-pair').value='';
+  document.getElementById('j-profit').value='';
+  document.getElementById('j-note').value='';
 }
 
-function renderTrades() {
-  const tbody = document.getElementById('trades-list');
-  if(!trades.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#444;padding:20px">Hali savdo yo\'q</td></tr>'; return; }
-  tbody.innerHTML = trades.map(t => `
-    <tr>
-      <td><b>${t.pair}</b></td>
-      <td><span class="badge ${t.type==='Buy'?'badge-green':'badge-red'}">${t.type}</span></td>
-      <td class="${t.profit>=0?'up':'down'}">${t.profit>=0?'+':''}$${t.profit}</td>
-      <td style="color:#666">${t.note||'-'}</td>
-      <td style="color:#666">${t.date}</td>
-    </tr>
-  `).join('');
-  
-  const recent = document.getElementById('recent-trades');
-  recent.innerHTML = trades.slice(0,5).map(t => `
-    <tr>
-      <td><b>${t.pair}</b></td>
-      <td><span class="badge ${t.profit>=0?'badge-green':'badge-red'}">${t.profit>=0?'Win':'Loss'}</span></td>
-      <td class="${t.profit>=0?'up':'down'}">${t.profit>=0?'+':''}$${t.profit}</td>
-      <td style="color:#666">${t.date}</td>
-    </tr>
-  `).join('');
+function renderTrades(){
+  const list=document.getElementById('trades-list');
+  const recent=document.getElementById('recent-trades');
+  if(!trades.length){
+    list.innerHTML='<tr><td colspan="4" style="text-align:center;color:#444;padding:16px">Hali savdo yo\'q</td></tr>';
+    recent.innerHTML='<tr><td colspan="4" style="text-align:center;color:#444;padding:16px">Hali savdo yo\'q</td></tr>';
+    return;
+  }
+  const row=t=>`<tr>
+    <td><b>${t.pair}</b></td>
+    <td><span class="badge ${t.type==='Buy'?'badge-green':'badge-red'}">${t.type}</span></td>
+    <td class="${t.profit>=0?'up':'down'}">${t.profit>=0?'+':''}$${t.profit}</td>
+    <td style="color:#666">${t.date}</td>
+  </tr>`;
+  list.innerHTML=trades.map(row).join('');
+  recent.innerHTML=trades.slice(0,4).map(row).join('');
 }
 
-function updateStats() {
-  const total = trades.length;
-  const wins = trades.filter(t => t.profit > 0).length;
-  const profit = trades.reduce((a,b) => a + b.profit, 0);
-  document.getElementById('total-trades').textContent = total;
-  document.getElementById('win-rate').textContent = total ? Math.round(wins/total*100)+'%' : '0%';
-  document.getElementById('total-profit').textContent = (profit>=0?'+':'') + '$' + profit.toFixed(0);
-  document.getElementById('win-rate').className = 'stat-value ' + (wins/total >= 0.5 ? 'up' : 'down');
-  renderTrades();
+function updateStats(){
+  const total=trades.length;
+  const wins=trades.filter(t=>t.profit>0).length;
+  const profit=trades.reduce((a,b)=>a+b.profit,0);
+  document.getElementById('total-trades').textContent=total;
+  document.getElementById('win-rate').textContent=total?Math.round(wins/total*100)+'%':'0%';
+  document.getElementById('total-profit').textContent=(profit>=0?'+':'')+'$'+profit.toFixed(0);
 }
 
-// Risk
-function calcRisk() {
-  const bal = parseFloat(document.getElementById('r-balance').value);
-  const risk = parseFloat(document.getElementById('r-risk').value);
-  const entry = parseFloat(document.getElementById('r-entry').value);
-  const stop = parseFloat(document.getElementById('r-stop').value);
-  if(!bal||!risk||!entry||!stop) return;
-  const riskAmount = bal * risk / 100;
-  const pips = Math.abs(entry - stop);
-  const lotSize = riskAmount / (pips * 10);
-  document.getElementById('risk-result').style.display = 'block';
-  document.getElementById('risk-output').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-      <div><span style="color:#666">Risk miqdori:</span><br><b class="down">$${riskAmount.toFixed(2)}</b></div>
-      <div><span style="color:#666">Lot hajmi:</span><br><b class="up">${lotSize.toFixed(2)}</b></div>
-      <div><span style="color:#666">Pip farqi:</span><br><b>${pips.toFixed(5)}</b></div>
-      <div><span style="color:#666">R/R (1:2):</span><br><b class="up">$${(riskAmount*2).toFixed(2)}</b></div>
-    </div>
+function calcRisk(){
+  const bal=parseFloat(document.getElementById('r-balance').value);
+  const risk=parseFloat(document.getElementById('r-risk').value);
+  const entry=parseFloat(document.getElementById('r-entry').value);
+  const stop=parseFloat(document.getElementById('r-stop').value);
+  if(!bal||!risk||!entry||!stop)return;
+  const riskAmt=bal*risk/100;
+  const pips=Math.abs(entry-stop);
+  const lot=riskAmt/(pips*10);
+  document.getElementById('risk-result').style.display='block';
+  document.getElementById('risk-output').innerHTML=`
+    <div class="result-row"><span style="color:#888">Risk miqdori</span><b class="down">$${riskAmt.toFixed(2)}</b></div>
+    <div class="result-row"><span style="color:#888">Lot hajmi</span><b class="up">${lot.toFixed(2)}</b></div>
+    <div class="result-row"><span style="color:#888">TP (1:2)</span><b class="up">$${(riskAmt*2).toFixed(2)}</b></div>
   `;
 }
 
-// Psychology
-function setMood(btn, emoji) {
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+function setMood(btn){
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
-  localStorage.setItem('tm_mood', emoji);
 }
 
-function savePsych() {
-  const note = document.getElementById('psych-note').value;
-  const conf = document.getElementById('confidence').value;
-  const disc = document.getElementById('discipline').value;
-  localStorage.setItem('tm_psych', JSON.stringify({note,conf,disc,date:new Date().toLocaleDateString()}));
+function savePsych(){
+  localStorage.setItem('tm_psych',JSON.stringify({
+    note:document.getElementById('psych-note').value,
+    conf:document.getElementById('confidence').value,
+    disc:document.getElementById('discipline').value,
+    date:new Date().toLocaleDateString()
+  }));
   alert('✅ Saqlandi!');
 }
 
-// Goals
-function setGoal() {
-  const monthly = parseFloat(document.getElementById('g-monthly').value);
-  const current = parseFloat(document.getElementById('g-current').value);
-  const percent = Math.min(Math.round(current/monthly*100), 100);
-  localStorage.setItem('tm_goal', JSON.stringify({monthly,current,percent}));
-  document.getElementById('goal-display').innerHTML = `
-    <div style="font-size:13px;color:#888;margin-bottom:8px">Oylik maqsad: <b style="color:#fff">$${monthly}</b></div>
-    <div style="font-size:13px;color:#888;margin-bottom:12px">Hozirgi: <b class="up">$${current}</b></div>
+function setGoal(){
+  const monthly=parseFloat(document.getElementById('g-monthly').value)||0;
+  const current=parseFloat(document.getElementById('g-current').value)||0;
+  const pct=Math.min(Math.round(current/monthly*100),100)||0;
+  localStorage.setItem('tm_goal',JSON.stringify({monthly,current,pct}));
+  document.getElementById('goal-display').innerHTML=`
     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-      <span>Progress</span><span>${percent}%</span>
+      <span style="color:#888">Maqsad: $${monthly}</span>
+      <span class="up">$${current}</span>
     </div>
-    <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div style="text-align:right;font-size:12px;color:#888;margin-top:4px">${pct}%</div>
   `;
-  document.getElementById('goal-percent').textContent = percent + '%';
-  document.getElementById('goal-bar').style.width = percent + '%';
+  document.getElementById('goal-percent').textContent=pct+'%';
+  document.getElementById('goal-bar').style.width=pct+'%';
 }
 
-// Martingale
-function calcMartingale() {
-  const init = parseFloat(document.getElementById('m-initial').value) || 0.01;
-  const mult = parseFloat(document.getElementById('m-multiplier').value) || 2;
-  const steps = parseInt(document.getElementById('m-steps').value) || 5;
-  const type = document.getElementById('m-type').value;
-  let rows = '';
-  let lot = init;
-  let total = 0;
-  for(let i=1; i<=steps; i++) {
-    total += lot;
-    rows += `<tr><td>${i}</td><td>${lot.toFixed(2)}</td><td>${total.toFixed(2)}</td></tr>`;
-    lot = type.includes('Anti') ? lot/mult : lot*mult;
+function calcMartingale(){
+  const init=parseFloat(document.getElementById('m-initial').value)||0.01;
+  const mult=parseFloat(document.getElementById('m-multiplier').value)||2;
+  const steps=parseInt(document.getElementById('m-steps').value)||5;
+  const anti=document.getElementById('m-type').value.includes('Anti');
+  let lot=init,total=0,rows='';
+  for(let i=1;i<=steps;i++){
+    total+=lot;
+    rows+=`<tr><td>${i}</td><td>${lot.toFixed(2)}</td><td>${total.toFixed(2)}</td></tr>`;
+    lot=anti?lot/mult:lot*mult;
   }
-  document.getElementById('martingale-result').innerHTML = `
-    <table>
-      <tr><th>Bosqich</th><th>Lot</th><th>Jami Lot</th></tr>
-      ${rows}
-    </table>
+  document.getElementById('martingale-result').innerHTML=`<table><tr><th>Bosqich</th><th>Lot</th><th>Jami</th></tr>${rows}</table>`;
+}
+
+function calcMargin(){
+  const bal=parseFloat(document.getElementById('mg-balance').value);
+  const lev=parseFloat(document.getElementById('mg-leverage').value);
+  const lot=parseFloat(document.getElementById('mg-lot').value);
+  const price=parseFloat(document.getElementById('mg-price').value);
+  if(!bal||!lev||!lot||!price)return;
+  const margin=(lot*100000*price)/lev;
+  const free=bal-margin;
+  document.getElementById('margin-result').style.display='block';
+  document.getElementById('margin-output').innerHTML=`
+    <div class="result-row"><span style="color:#888">Margin</span><b class="down">$${margin.toFixed(2)}</b></div>
+    <div class="result-row"><span style="color:#888">Erkin Margin</span><b class="up">$${free.toFixed(2)}</b></div>
+    <div class="result-row"><span style="color:#888">Leverage</span><b>1:${lev}</b></div>
   `;
 }
 
-// Margin
-function calcMargin() {
-  const bal = parseFloat(document.getElementById('mg-balance').value);
-  const lev = parseFloat(document.getElementById('mg-leverage').value);
-  const lot = parseFloat(document.getElementById('mg-lot').value);
-  const price = parseFloat(document.getElementById('mg-price').value);
-  if(!bal||!lev||!lot||!price) return;
-  const margin = (lot * 100000 * price) / lev;
-  const freeMargin = bal - margin;
-  const marginLevel = (bal / margin * 100);
-  document.getElementById('margin-result').style.display = 'block';
-  document.getElementById('margin-output').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-      <div><span style="color:#666">Talab qilinadigan Margin:</span><br><b class="down">$${margin.toFixed(2)}</b></div>
-      <div><span style="color:#666">Erkin Margin:</span><br><b class="up">$${freeMargin.toFixed(2)}</b></div>
-      <div><span style="color:#666">Margin Level:</span><br><b>${marginLevel.toFixed(0)}%</b></div>
-      <div><span style="color:#666">Leverage:</span><br><b>1:${lev}</b></div>
-    </div>
-  `;
-}
-
-// Sessions
-function renderSessions() {
-  const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const sessions = [
-    {name:'🌏 Osiyo (Tokyo)', open:0, close:9, tz:'UTC+9'},
-    {name:'🌍 London', open:8, close:17, tz:'UTC+0'},
-    {name:'🌎 New York', open:13, close:22, tz:'UTC-5'},
+function renderSessions(){
+  const now=new Date();
+  const utcH=now.getUTCHours();
+  const sess=[
+    {n:'🌏 Tokyo',o:0,c:9},
+    {n:'🌍 London',o:8,c:17},
+    {n:'🌎 New York',o:13,c:22},
+    {n:'🔄 Overlap',o:13,c:17},
   ];
-  const hour = new Date(utc).getUTCHours();
-  document.getElementById('sessions-list').innerHTML = sessions.map(s => {
-    const active = hour >= s.open && hour < s.close;
-    return `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:rgba(255,255,255,0.03);border:1px solid ${active?'rgba(0,212,170,0.3)':'rgba(255,255,255,0.07)'};border-radius:12px">
-        <div>
-          <div style="font-size:15px;font-weight:600">${s.name}</div>
-          <div style="font-size:12px;color:#666">${s.open}:00 - ${s.close}:00 ${s.tz}</div>
-        </div>
-        <span class="badge ${active?'badge-green':'badge-red'}">${active?'🟢 Ochiq':'🔴 Yopiq'}</span>
+  document.getElementById('sessions-list').innerHTML=sess.map(s=>{
+    const active=utcH>=s.o&&utcH<s.c;
+    return `<div class="session-card" style="border:1px solid ${active?'rgba(0,212,170,0.3)':'rgba(255,255,255,0.06)'}">
+      <div>
+        <div style="font-size:14px;font-weight:600">${s.n}</div>
+        <div style="font-size:11px;color:#666">${s.o}:00 - ${s.c}:00 UTC</div>
       </div>
-    `;
+      <span class="badge ${active?'badge-green':'badge-red'}">${active?'🟢 Ochiq':'🔴 Yopiq'}</span>
+    </div>`;
   }).join('');
 }
 
 // Init
-renderTrades();
-updateStats();
+renderTrades();updateStats();
+const saved=JSON.parse(localStorage.getItem('tm_goal')||'{}');
+if(saved.pct){
+  document.getElementById('goal-percent').textContent=saved.pct+'%';
+  document.getElementById('goal-bar').style.width=saved.pct+'%';
+}
 </script>
 </body>
 </html>
