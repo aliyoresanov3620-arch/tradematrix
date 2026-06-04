@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TradeMatrix Pro — Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#080810;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
@@ -46,6 +47,53 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
 .result-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
 .session-card{display:flex;align-items:center;justify-content:space-between;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px}
 
+/* Chart */
+.chart-wrap{position:relative;height:200px;margin-top:4px}
+
+/* Account stats */
+.acct-stat{background:rgba(255,255,255,0.03);border-radius:10px;padding:10px}
+.acct-lbl{font-size:10px;color:#555;margin-bottom:3px}
+.acct-val{font-size:16px;font-weight:700}
+.acct-sub{font-size:10px;color:#555;margin-top:2px}
+
+/* Journal table */
+.journal-table{width:100%;border-collapse:collapse;font-size:11px;min-width:600px}
+.journal-table th{color:#444;text-align:left;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.06);white-space:nowrap;font-size:10px}
+.journal-table td{color:#ccc;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,0.03);white-space:nowrap}
+.journal-table tr:hover td{background:rgba(124,58,237,0.05)}
+
+/* Direction badges */
+.dir-long{background:rgba(0,212,170,0.15);color:#00d4aa;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700}
+.dir-short{background:rgba(255,68,68,0.15);color:#ff6666;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700}
+.result-tp{background:rgba(0,212,170,0.12);color:#00d4aa;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600}
+.result-sl{background:rgba(255,68,68,0.12);color:#ff5555;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600}
+.result-be{background:rgba(255,185,0,0.12);color:#ffb900;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600}
+.result-open{background:rgba(124,58,237,0.15);color:#a78bfa;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600}
+.tf-badge{background:rgba(255,255,255,0.07);color:#aaa;padding:2px 5px;border-radius:4px;font-size:10px}
+.session-badge{background:rgba(124,58,237,0.1);color:#a78bfa;padding:2px 7px;border-radius:5px;font-size:10px}
+
+/* Filter buttons */
+.filter-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#666;padding:4px 10px;border-radius:7px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.filter-btn.active{background:rgba(124,58,237,0.2);border-color:rgba(124,58,237,0.4);color:#a78bfa}
+
+/* Trade actions */
+.trade-actions{display:flex;gap:4px}
+.btn-icon{padding:3px 8px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600}
+.btn-del{background:rgba(255,68,68,0.15);color:#ff6666}
+.btn-edit{background:rgba(124,58,237,0.15);color:#a78bfa}
+
+/* Stats row */
+.stats-row{display:flex;gap:8px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.stat-pill{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 12px;white-space:nowrap;flex-shrink:0}
+.stat-pill .lbl{font-size:10px;color:#555}
+.stat-pill .val{font-size:16px;font-weight:700;margin-top:1px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#0f0f1a;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:20px;width:100%;max-width:360px}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:14px}
+.modal-btns{display:flex;gap:8px;margin-top:6px}
+
 /* Bottom Nav */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,16,0.97);border-top:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 0 12px;z-index:100}
 .nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#555;cursor:pointer;font-size:10px;padding:4px}
@@ -73,7 +121,6 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
 
 <div class="content">
 
-  <!-- HOME -->
   <div class="section active" id="sec-home">
     <div class="stats-grid">
       <div class="stat-card">
@@ -114,32 +161,180 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
       </div>
       <div class="progress-bar"><div class="progress-fill" id="goal-bar" style="width:0%"></div></div>
     </div>
+
+    <div class="card">
+      <div class="card-title">📈 PnL Dinamikasi</div>
+      <div class="chart-wrap"><canvas id="pnl-chart"></canvas></div>
+    </div>
   </div>
 
-  <!-- JOURNAL -->
   <div class="section" id="sec-journal">
-    <div class="card">
-      <div class="card-title">➕ Yangi Savdo</div>
-      <input class="input" id="j-pair" placeholder="Juftlik (EURUSD)">
-      <select class="input" id="j-type"><option>Buy</option><option>Sell</option></select>
-      <input class="input" id="j-entry" placeholder="Kirish narxi" type="number">
-      <input class="input" id="j-exit" placeholder="Chiqish narxi" type="number">
-      <input class="input" id="j-profit" placeholder="Profit ($)" type="number">
-      <input class="input" id="j-note" placeholder="Izoh...">
-      <button class="btn btn-purple" onclick="addTrade()">💾 Saqlash</button>
+
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700">📊 Accounts</div>
+        <button class="btn-icon btn-edit" onclick="toggleAccountEdit()" style="padding:4px 10px;font-size:11px">⚙️ Sozla</button>
+      </div>
+      <div id="account-edit-panel" style="display:none;margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Broker nomi</div><input class="input" id="acc-broker" placeholder="XM / Exness / ICMarkets" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Hisob nomi</div><input class="input" id="acc-name" placeholder="My Account" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Tur</div><select class="input" id="acc-type" style="margin:0"><option>Demo</option><option>Real</option></select></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Valyuta</div>
+            <select class="input" id="acc-currency" style="margin:0">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+            </select>
+          </div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Boshlang'ich balans</div><input class="input" id="acc-init" type="number" placeholder="0" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Maqsad ($)</div><input class="input" id="acc-goal" type="number" placeholder="100" style="margin:0"></div>
+        </div>
+        <button class="btn btn-purple" style="margin-top:8px" onclick="saveAccount()">💾 Saqlash</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px" id="account-summary-top">
+        <div class="acct-stat" style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div class="acct-lbl">Broker</div>
+            <div class="acct-val" id="disp-broker" style="font-size:14px;color:#a78bfa">—</div>
+          </div>
+          <div style="text-align:right">
+            <div class="acct-lbl">Hisob</div>
+            <div style="font-size:13px;font-weight:600" id="disp-name">—</div>
+            <div class="acct-sub" id="disp-type">Demo</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="account-summary">
+        <div class="acct-stat"><div class="acct-lbl">Joriy Balans</div><div class="acct-val" id="disp-balance">$0.00</div><div class="acct-sub" id="disp-init">Boshl: $0</div></div>
+        <div class="acct-stat"><div class="acct-lbl">Net PnL</div><div class="acct-val" id="disp-pnl">$0.00</div><div class="acct-sub" id="disp-goal-prog">Maqsad: $100</div></div>
+        <div class="acct-stat"><div class="acct-lbl">Win Rate</div><div class="acct-val up" id="disp-wr">0%</div><div class="acct-sub" id="disp-trades">0 savdo</div></div>
+        <div class="acct-stat"><div class="acct-lbl">O'rtacha RR</div><div class="acct-val" id="disp-avg-rr" style="color:#a78bfa">—</div><div class="acct-sub">Risk:Reward</div></div>
+      </div>
+      <div class="progress-bar" style="margin-top:10px"><div class="progress-fill" id="acc-goal-bar" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#555;margin-top:4px">
+        <span>Maqsad progressi</span><span id="acc-goal-pct">0%</span>
+      </div>
     </div>
+
     <div class="card">
-      <div class="card-title">📋 Savdo Tarixi</div>
-      <table>
-        <tr><th>Juftlik</th><th>Tur</th><th>Profit</th><th>Sana</th></tr>
-        <tbody id="trades-list">
-          <tr><td colspan="4" style="text-align:center;color:#444;padding:16px">Hali savdo yo'q</td></tr>
-        </tbody>
-      </table>
+      <div class="card-title" style="cursor:pointer" onclick="toggleAddForm()">➕ Yangi Savdo <span id="add-form-arrow" style="float:right;color:#555">▼</span></div>
+      <div id="add-trade-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Valyuta Turi</div>
+            <select class="input" id="j-category" style="margin:0" onchange="updatePairList()">
+              <option value="major">Major</option>
+              <option value="minor">Minor</option>
+              <option value="metal">Metal</option>
+              <option value="crypto">Crypto</option>
+            </select>
+          </div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Juftlik</div>
+            <select class="input" id="j-pair" style="margin:0"></select>
+          </div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Yo'nalish</div>
+            <select class="input" id="j-type" style="margin:0">
+              <option value="LONG">LONG</option><option value="SHORT">SHORT</option>
+            </select>
+          </div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Sessiya</div>
+            <select class="input" id="j-session" style="margin:0">
+              <option>London</option><option>New York</option><option>Tokyo</option><option>Sydney</option>
+            </select>
+          </div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Ochilish vaqti</div><input class="input" id="j-open" type="datetime-local" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Yopilish vaqti</div><input class="input" id="j-close" type="datetime-local" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Kirish narxi</div><input class="input" id="j-entry" type="number" step="any" placeholder="1.08500" style="margin:0" oninput="autoCalcRR()"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Stop Loss narxi</div><input class="input" id="j-sl" type="number" step="any" placeholder="1.08000" style="margin:0" oninput="autoCalcRR()"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Take Profit narxi</div><input class="input" id="j-tp" type="number" step="any" placeholder="1.09500" style="margin:0" oninput="autoCalcRR()"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">RR Ratio <span id="rr-auto-badge" style="color:#00d4aa;font-size:9px"></span></div>
+            <input class="input" id="j-rr-display" placeholder="Auto" readonly style="margin:0;color:#a78bfa;font-weight:700;cursor:default">
+          </div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Lot</div><input class="input" id="j-lot" type="number" step="0.01" placeholder="0.01" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Time Frame</div>
+            <select class="input" id="j-tf" style="margin:0">
+              <option>M1</option><option>M5</option><option>M15</option><option>M30</option><option>H1</option><option>H4</option><option>D1</option>
+            </select>
+          </div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Natija</div>
+            <select class="input" id="j-result" style="margin:0">
+              <option>TAKE PROFIT</option><option>STOPLOSS</option><option>BREAKEVEN</option><option>OPEN</option>
+            </select>
+          </div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Gross PnL ($)</div><input class="input" id="j-profit" type="number" step="0.01" placeholder="2.55" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Risk %</div><input class="input" id="j-risk" type="number" step="0.1" placeholder="2" style="margin:0"></div>
+          <div><div style="font-size:10px;color:#666;margin-bottom:3px">Komissiya</div><input class="input" id="j-comm" type="number" step="0.01" placeholder="0.00" style="margin:0"></div>
+        </div>
+        <input class="input" id="j-note" placeholder="Izoh / Setup..." style="margin-top:8px">
+        <button class="btn btn-purple" style="margin-top:8px" onclick="addTrade()">💾 Saqlash</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="card-title" style="margin:0">📈 PnL Grafik</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-icon btn-edit" onclick="setChartMode('cumulative')" id="chart-btn-cum" style="padding:3px 8px">Kumulativ</button>
+          <button class="btn-icon btn-edit" onclick="setChartMode('bar')" id="chart-btn-bar" style="padding:3px 8px">Har biri</button>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:180px"><canvas id="journal-chart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="card-title" style="margin:0">📋 Trade Journal</div>
+        <button class="btn-icon btn-edit" onclick="exportCSV()" style="padding:4px 10px">📥 CSV</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px">
+        <button class="filter-btn active" onclick="setFilter('all',this)">Hammasi</button>
+        <button class="filter-btn" onclick="setFilter('TAKE PROFIT',this)">✅ TP</button>
+        <button class="filter-btn" onclick="setFilter('STOPLOSS',this)">❌ SL</button>
+        <button class="filter-btn" onclick="setFilter('LONG',this)">📈 Long</button>
+        <button class="filter-btn" onclick="setFilter('SHORT',this)">📉 Short</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="journal-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Juftlik</th><th>Ochilish</th><th>Yopilish</th>
+              <th>Dir</th><th>Lot</th><th>TF</th><th>Sessiya</th>
+              <th>Natija</th><th>Gross PnL</th><th>Net PnL</th>
+              <th>Risk%</th><th>RR</th><th>Amal</th>
+            </tr>
+          </thead>
+          <tbody id="trades-list">
+            <tr><td colspan="14" style="text-align:center;color:#444;padding:20px">Hali savdo yo'q</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="journal-summary" style="display:none;margin-top:10px;padding:10px;background:rgba(124,58,237,0.07);border-radius:10px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:11px">
+          <div><span style="color:#666">Jami:</span> <b id="sum-total">0</b></div>
+          <div><span style="color:#666">G'alaba:</span> <b class="up" id="sum-wins">0</b></div>
+          <div><span style="color:#666">Yutqazish:</span> <b class="down" id="sum-losses">0</b></div>
+          <div><span style="color:#666">Net PnL:</span> <b id="sum-net">$0</b></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- RISK -->
+  <div class="modal-overlay" id="edit-modal" style="display:none">
+    <div class="modal-box">
+      <div class="modal-title">✏️ Savdoni Tahrirlash</div>
+      <input type="hidden" id="edit-id">
+      <input class="input" id="edit-pair" placeholder="Juftlik">
+      <select class="input" id="edit-type"><option>Buy</option><option>Sell</option></select>
+      <input class="input" id="edit-entry" placeholder="Kirish narxi" type="number">
+      <input class="input" id="edit-exit" placeholder="Chiqish narxi" type="number">
+      <input class="input" id="edit-profit" placeholder="Profit ($)" type="number">
+      <input class="input" id="edit-note" placeholder="Izoh...">
+      <div class="modal-btns">
+        <button class="btn btn-purple" style="flex:1" onclick="saveEdit()">💾 Saqlash</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Bekor</button>
+      </div>
+    </div>
+  </div>
   <div class="section" id="sec-risk">
     <div class="card">
       <div class="card-title">⚠️ Risk Kalkulyator</div>
@@ -154,7 +349,6 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
     </div>
   </div>
 
-  <!-- PSYCHOLOGY -->
   <div class="section" id="sec-psychology">
     <div class="card">
       <div class="card-title">🧠 Bugungi Kayfiyat</div>
@@ -181,7 +375,6 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
     </div>
   </div>
 
-  <!-- GOALS -->
   <div class="section" id="sec-goals">
     <div class="card">
       <div class="card-title">🎯 Maqsad Qo'yish</div>
@@ -195,7 +388,6 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
     </div>
   </div>
 
-  <!-- MARTINGALE -->
   <div class="section" id="sec-martingale">
     <div class="card">
       <div class="card-title">📊 Martingale Kalkulyator</div>
@@ -211,7 +403,6 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
     </div>
   </div>
 
-  <!-- MARGIN -->
   <div class="section" id="sec-margin">
     <div class="card">
       <div class="card-title">💰 Margin Kalkulyator</div>
@@ -226,7 +417,6 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
     </div>
   </div>
 
-  <!-- SESSION -->
   <div class="section" id="sec-session">
     <div class="card">
       <div class="card-title">⏰ Savdo Sessiyalari</div>
@@ -234,7 +424,6 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
     </div>
   </div>
 
-  <!-- MORE -->
   <div class="section" id="sec-more">
     <div class="card">
       <div class="card-title">⚙️ Sozlamalar</div>
@@ -253,7 +442,6 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
 
 </div>
 
-<!-- Bottom Nav -->
 <div class="bottom-nav">
   <button class="nav-btn active" onclick="showSection('home',this)">
     <span class="icon">🏠</span>Bosh
@@ -272,7 +460,6 @@ td{color:#ccc;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
   </button>
 </div>
 
-<!-- More Menu -->
 <div class="more-menu" id="more-menu">
   <div class="more-item" onclick="showSection('goals',null);toggleMore()">
     <span class="icon">🎯</span>Maqsadlar
@@ -324,49 +511,348 @@ function toggleMore(){
 }
 
 function addTrade(){
+  const pairEl = document.getElementById('j-pair');
+  const pair = pairEl.tagName==='SELECT' ? pairEl.value : (pairEl.value||'GOLD');
+  const profit = parseFloat(document.getElementById('j-profit').value)||0;
+  const comm = parseFloat(document.getElementById('j-comm').value)||0;
+  const entry = parseFloat(document.getElementById('j-entry').value)||0;
+  const sl = parseFloat(document.getElementById('j-sl').value)||0;
+  const tp = parseFloat(document.getElementById('j-tp').value)||0;
+  const rrVal = calcRRValue(entry, sl, tp);
   const t={
-    id:Date.now(),
-    pair:document.getElementById('j-pair').value||'EURUSD',
-    type:document.getElementById('j-type').value,
-    entry:document.getElementById('j-entry').value,
-    exit:document.getElementById('j-exit').value,
-    profit:parseFloat(document.getElementById('j-profit').value)||0,
-    note:document.getElementById('j-note').value,
-    date:new Date().toLocaleDateString('uz')
+    id: Date.now(),
+    name: pair+' '+(String(trades.length+1).padStart(2,'0')),
+    pair,
+    category: document.getElementById('j-category').value,
+    type: document.getElementById('j-type').value,
+    open: document.getElementById('j-open').value,
+    close: document.getElementById('j-close').value,
+    lot: parseFloat(document.getElementById('j-lot').value)||0.01,
+    tf: document.getElementById('j-tf').value,
+    session: document.getElementById('j-session').value,
+    result: document.getElementById('j-result').value,
+    gross: profit,
+    commission: comm,
+    swap: 0,
+    net: profit - comm,
+    risk: parseFloat(document.getElementById('j-risk').value)||2,
+    entry, sl, tp,
+    rr: rrVal || document.getElementById('j-rr-display').value || '—',
+    note: document.getElementById('j-note').value,
+    date: new Date().toLocaleDateString('uz')
   };
   trades.unshift(t);
-  localStorage.setItem('tm_trades',JSON.stringify(trades));
-  renderTrades();updateStats();
-  document.getElementById('j-pair').value='';
-  document.getElementById('j-profit').value='';
-  document.getElementById('j-note').value='';
+  localStorage.setItem('tm_trades', JSON.stringify(trades));
+  renderTrades(); updateStats(); updateAccountDisplay();
+  // Reset form
+  ['j-profit','j-comm','j-note','j-open','j-close','j-entry','j-sl','j-tp'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('j-rr-display').value='';
+  document.getElementById('rr-auto-badge').textContent='';
 }
 
 function renderTrades(){
-  const list=document.getElementById('trades-list');
-  const recent=document.getElementById('recent-trades');
-  if(!trades.length){
-    list.innerHTML='<tr><td colspan="4" style="text-align:center;color:#444;padding:16px">Hali savdo yo\'q</td></tr>';
-    recent.innerHTML='<tr><td colspan="4" style="text-align:center;color:#444;padding:16px">Hali savdo yo\'q</td></tr>';
-    return;
+  const list = document.getElementById('trades-list');
+  const recent = document.getElementById('recent-trades');
+
+  let filtered = trades;
+  if(activeFilter !== 'all'){
+    filtered = trades.filter(t => t.result===activeFilter || t.type===activeFilter);
   }
-  const row=t=>`<tr>
-    <td><b>${t.pair}</b></td>
-    <td><span class="badge ${t.type==='Buy'?'badge-green':'badge-red'}">${t.type}</span></td>
-    <td class="${t.profit>=0?'up':'down'}">${t.profit>=0?'+':''}$${t.profit}</td>
-    <td style="color:#666">${t.date}</td>
-  </tr>`;
-  list.innerHTML=trades.map(row).join('');
-  recent.innerHTML=trades.slice(0,4).map(row).join('');
+
+  if(!filtered.length){
+    list.innerHTML='<tr><td colspan="14" style="text-align:center;color:#444;padding:20px">Hali savdo yo\'q</td></tr>';
+    if(recent) recent.innerHTML='<tr><td colspan="4" style="text-align:center;color:#444;padding:16px">Hali savdo yo\'q</td></tr>';
+    renderJournalChart(); updateJournalSummary(filtered); return;
+  }
+
+  const resultBadge = r => {
+    if(r==='TAKE PROFIT') return `<span class="result-tp">✅ TP</span>`;
+    if(r==='STOPLOSS') return `<span class="result-sl">❌ SL</span>`;
+    if(r==='BREAKEVEN') return `<span class="result-be">➡️ BE</span>`;
+    return `<span class="result-open">🔵 OPEN</span>`;
+  };
+  const fmtDt = s => {
+    if(!s) return '<span style="color:#444">—</span>';
+    const d = new Date(s);
+    if(isNaN(d)) return `<span style="color:#888">${s}</span>`;
+    return `<span style="color:#888">${d.toLocaleDateString('uz')}</span><br><span style="color:#555;font-size:10px">${d.toLocaleTimeString('uz',{hour:'2-digit',minute:'2-digit'})}</span>`;
+  };
+
+  list.innerHTML = filtered.map((t,i)=>{
+    const net = typeof t.net==='number'?t.net:(typeof t.gross==='number'?t.gross:(t.profit||0));
+    const gross = typeof t.gross==='number'?t.gross:(t.profit||0);
+    const isLong = t.type==='LONG'||t.type==='Buy';
+    return `<tr>
+      <td style="color:#555">${filtered.length-i}</td>
+      <td><b style="color:#fff">${t.pair||'—'}</b></td>
+      <td>${fmtDt(t.open||t.date)}</td>
+      <td>${fmtDt(t.close)}</td>
+      <td>${isLong?`<span class="dir-long">LONG</span>`:`<span class="dir-short">SHORT</span>`}</td>
+      <td style="color:#aaa">${t.lot||'0.01'}</td>
+      <td><span class="tf-badge">${t.tf||'M1'}</span></td>
+      <td><span class="session-badge">${t.session||'London'}</span></td>
+      <td>${resultBadge(t.result||'TAKE PROFIT')}</td>
+      <td class="${gross>=0?'up':'down'}">${gross>=0?'+':''}$${parseFloat(gross).toFixed(2)}</td>
+      <td class="${net>=0?'up':'down'}" style="font-weight:700">${net>=0?'+':''}$${parseFloat(net).toFixed(2)}</td>
+      <td style="color:#888">${t.risk||20}%</td>
+      <td><span style="background:rgba(124,58,237,0.15);color:#a78bfa;padding:2px 6px;border-radius:4px;font-size:10px">${t.rr||'4:1'}</span></td>
+      <td><div class="trade-actions">
+        <button class="btn-icon btn-edit" onclick="openEdit(${t.id})">✏️</button>
+        <button class="btn-icon btn-del" onclick="deleteTrade(${t.id})">🗑</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  if(recent){
+    const recentRow = t => {
+      const net = typeof t.net==='number'?t.net:(t.profit||0);
+      const isLong = t.type==='LONG'||t.type==='Buy';
+      return `<tr>
+        <td><b>${t.pair||'GOLD'}</b></td>
+        <td><span class="badge ${isLong?'badge-green':'badge-red'}">${isLong?'Long':'Short'}</span></td>
+        <td class="${net>=0?'up':'down'}">${net>=0?'+':''}$${parseFloat(net).toFixed(2)}</td>
+        <td style="color:#666">${t.date||'—'}</td>
+      </tr>`;
+    };
+    recent.innerHTML = trades.slice(0,4).map(recentRow).join('');
+  }
+
+  renderJournalChart(); updateJournalSummary(filtered);
+}
+
+function updateJournalSummary(filtered){
+  const el = document.getElementById('journal-summary');
+  if(!el||!filtered.length){if(el)el.style.display='none';return;}
+  el.style.display='block';
+  const wins = filtered.filter(t=>(t.net??t.gross??t.profit??0)>0).length;
+  const losses = filtered.filter(t=>(t.net??t.gross??t.profit??0)<0).length;
+  const net = filtered.reduce((a,t)=>a+(t.net??t.gross??t.profit??0),0);
+  document.getElementById('sum-total').textContent = filtered.length;
+  document.getElementById('sum-wins').textContent = wins;
+  document.getElementById('sum-losses').textContent = losses;
+  const sn = document.getElementById('sum-net');
+  sn.className = net>=0?'up':'down';
+  sn.textContent = (net>=0?'+':'')+'$'+net.toFixed(2);
 }
 
 function updateStats(){
-  const total=trades.length;
-  const wins=trades.filter(t=>t.profit>0).length;
-  const profit=trades.reduce((a,b)=>a+b.profit,0);
-  document.getElementById('total-trades').textContent=total;
-  document.getElementById('win-rate').textContent=total?Math.round(wins/total*100)+'%':'0%';
-  document.getElementById('total-profit').textContent=(profit>=0?'+':'')+'$'+profit.toFixed(0);
+  const total = trades.length;
+  const wins = trades.filter(t=>(t.net??t.gross??t.profit??0)>0).length;
+  const profit = trades.reduce((a,t)=>a+(t.net??t.gross??t.profit??0),0);
+  document.getElementById('total-trades').textContent = total;
+  document.getElementById('win-rate').textContent = total?Math.round(wins/total*100)+'%':'0%';
+  document.getElementById('total-profit').textContent = (profit>=0?'+':'')+'$'+profit.toFixed(0);
+}
+
+function updateAccountDisplay(){
+  const acc = JSON.parse(localStorage.getItem('tm_account')||'{"broker":"","name":"Mening hisobim","type":"Demo","currency":"USD","init":0,"goal":100}');
+  const profit = trades.reduce((a,t)=>a+(t.net??t.gross??t.profit??0),0);
+  const balance = acc.init + profit;
+  const wins = trades.filter(t=>(t.net??t.gross??t.profit??0)>0).length;
+  const wr = trades.length ? Math.round(wins/trades.length*100) : 0;
+  const goalPct = Math.min(Math.round((profit/acc.goal)*100),100)||0;
+  const rrTrades = trades.filter(t=>t.rr && t.rr!=='—');
+  let avgRR = '—';
+  if(rrTrades.length){
+    const sum = rrTrades.reduce((a,t)=>{
+      const m = String(t.rr).match(/([\d.]+):([\d.]+)/);
+      if(m) return a+(parseFloat(m[2])/parseFloat(m[1]));
+      const n=parseFloat(t.rr); return a+(isNaN(n)?0:n);
+    },0);
+    avgRR = (sum/rrTrades.length).toFixed(2)+':1';
+  }
+  document.getElementById('disp-broker').textContent = acc.broker||'—';
+  document.getElementById('disp-name').textContent = acc.name;
+  document.getElementById('disp-type').textContent = acc.type;
+  document.getElementById('disp-balance').textContent = '$'+balance.toFixed(2);
+  document.getElementById('disp-init').textContent = 'Boshl: $'+acc.init;
+  document.getElementById('disp-pnl').textContent = (profit>=0?'+':'')+'$'+profit.toFixed(2);
+  document.getElementById('disp-pnl').className = 'acct-val '+(profit>=0?'up':'down');
+  document.getElementById('disp-goal-prog').textContent = 'Maqsad: $'+acc.goal;
+  document.getElementById('disp-wr').textContent = wr+'%';
+  document.getElementById('disp-trades').textContent = trades.length+' savdo';
+  document.getElementById('disp-avg-rr').textContent = avgRR;
+  document.getElementById('acc-goal-bar').style.width = goalPct+'%';
+  document.getElementById('acc-goal-pct').textContent = goalPct+'%';
+  document.getElementById('acc-broker').value = acc.broker||'';
+  document.getElementById('acc-name').value = acc.name;
+  document.getElementById('acc-type').value = acc.type;
+  document.getElementById('acc-currency').value = acc.currency||'USD';
+  document.getElementById('acc-init').value = acc.init;
+  document.getElementById('acc-goal').value = acc.goal;
+}
+
+function saveAccount(){
+  const acc = {
+    broker: document.getElementById('acc-broker').value||'',
+    name: document.getElementById('acc-name').value||'Mening hisobim',
+    type: document.getElementById('acc-type').value,
+    currency: document.getElementById('acc-currency').value||'USD',
+    init: parseFloat(document.getElementById('acc-init').value)||0,
+    goal: parseFloat(document.getElementById('acc-goal').value)||100,
+  };
+  localStorage.setItem('tm_account', JSON.stringify(acc));
+  updateAccountDisplay();
+  document.getElementById('account-edit-panel').style.display='none';
+}
+
+function toggleAccountEdit(){
+  const p = document.getElementById('account-edit-panel');
+  p.style.display = p.style.display==='none'?'block':'none';
+}
+function toggleAddForm(){
+  const f = document.getElementById('add-trade-form');
+  const a = document.getElementById('add-form-arrow');
+  const open = f.style.display!=='none';
+  f.style.display = open?'none':'block';
+  a.textContent = open?'▶':'▼';
+}
+
+let journalChartInstance = null;
+let chartMode = 'cumulative';
+function setChartMode(mode){
+  chartMode = mode;
+  document.getElementById('chart-btn-cum').style.background = mode==='cumulative'?'rgba(124,58,237,0.3)':'rgba(255,255,255,0.05)';
+  document.getElementById('chart-btn-bar').style.background = mode==='bar'?'rgba(124,58,237,0.3)':'rgba(255,255,255,0.05)';
+  renderJournalChart();
+}
+
+function renderJournalChart(){
+  const canvas = document.getElementById('journal-chart');
+  if(!canvas) return;
+  const sorted = [...trades].reverse();
+  if(journalChartInstance){ journalChartInstance.destroy(); journalChartInstance=null; }
+  if(!sorted.length){
+    canvas.parentElement.innerHTML='<div style="color:#444;font-size:12px;text-align:center;padding:30px 0">Savdo qo\'shilgach grafik ko\'rinadi</div>';
+    return;
+  }
+  const labels = sorted.map((t,i)=> (t.pair||'T')+'#'+(i+1));
+  let data;
+  if(chartMode==='cumulative'){
+    let cum=0;
+    data = sorted.map(t=>{ cum += (t.net??t.gross??t.profit??0); return +cum.toFixed(2); });
+  } else {
+    data = sorted.map(t => +(t.net??t.gross??t.profit??0).toFixed(2));
+  }
+  const colors = data.map(v=>v>=0?'#00d4aa':'#ff4444');
+  journalChartInstance = new Chart(canvas,{
+    type: chartMode==='cumulative'?'line':'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'PnL ($)',
+        data,
+        borderColor: chartMode==='cumulative'?'#7c3aed':colors,
+        backgroundColor: chartMode==='cumulative'
+          ? (ctx)=>{ const g=ctx.chart.ctx.createLinearGradient(0,0,0,160); g.addColorStop(0,'rgba(124,58,237,0.35)'); g.addColorStop(1,'rgba(124,58,237,0)'); return g; }
+          : colors.map(c=>c+'99'),
+        borderWidth: chartMode==='cumulative'?2:1,
+        fill: chartMode==='cumulative',
+        tension: 0.4,
+        pointRadius: chartMode==='cumulative'?3:0,
+        pointBackgroundColor: colors,
+        borderRadius: chartMode==='bar'?4:0,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'rgba(10,10,20,0.95)',borderColor:'rgba(124,58,237,0.3)',borderWidth:1,titleColor:'#888',bodyColor:'#fff',callbacks:{label:ctx=>' $'+ctx.parsed.y.toFixed(2)}}
+      },
+      scales:{
+        x:{ticks:{color:'#444',font:{size:9},maxRotation:0},grid:{color:'rgba(255,255,255,0.03)'},border:{color:'transparent'}},
+        y:{ticks:{color:'#555',font:{size:9},callback:v=>'$'+v},grid:{color:'rgba(255,255,255,0.05)'},border:{color:'transparent'}}
+      }
+    }
+  });
+}
+
+let pnlChartInstance = null;
+function renderChart(){
+  const canvas = document.getElementById('pnl-chart');
+  if(!canvas) return;
+  const sorted = [...trades].reverse();
+  if(pnlChartInstance){ pnlChartInstance.destroy(); pnlChartInstance=null; }
+  if(!sorted.length){ return; }
+  let cum=0;
+  const labels = sorted.map((t,i)=>(t.pair||'T')+'#'+(i+1));
+  const data = sorted.map(t=>{ cum+=(t.net??t.gross??t.profit??0); return +cum.toFixed(2); });
+  pnlChartInstance = new Chart(canvas,{
+    type:'line',
+    data:{ labels, datasets:[{
+      data, borderColor:'#7c3aed',
+      backgroundColor:(ctx)=>{ const g=ctx.chart.ctx.createLinearGradient(0,0,0,160); g.addColorStop(0,'rgba(124,58,237,0.3)'); g.addColorStop(1,'rgba(124,58,237,0)'); return g; },
+      borderWidth:2, fill:true, tension:0.4, pointRadius:3,
+      pointBackgroundColor:data.map(v=>v>=0?'#00d4aa':'#ff4444'), pointBorderColor:'transparent'
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(10,10,20,0.95)',borderColor:'rgba(124,58,237,0.3)',borderWidth:1,bodyColor:'#fff',callbacks:{label:ctx=>' $'+ctx.parsed.y.toFixed(2)}}},
+      scales:{x:{ticks:{color:'#444',font:{size:9}},grid:{color:'rgba(255,255,255,0.03)'},border:{color:'transparent'}},y:{ticks:{color:'#555',font:{size:9},callback:v=>'$'+v},grid:{color:'rgba(255,255,255,0.05)'},border:{color:'transparent'}}}}
+  });
+}
+
+let activeFilter = 'all';
+function setFilter(f, btn){
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderTrades();
+}
+
+function deleteTrade(id){
+  if(!confirm('Bu savdoni o\'chirasizmi?'))return;
+  trades = trades.filter(t=>t.id!==id);
+  localStorage.setItem('tm_trades', JSON.stringify(trades));
+  renderTrades(); updateStats(); updateAccountDisplay(); renderChart();
+}
+
+function openEdit(id){
+  const t = trades.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-pair').value = t.pair||'';
+  document.getElementById('edit-type').value = (t.type==='Buy'||t.type==='LONG')?'LONG':'SHORT';
+  document.getElementById('edit-entry').value = t.entry||'';
+  document.getElementById('edit-exit').value = t.exit||'';
+  document.getElementById('edit-profit').value = t.gross??t.profit??0;
+  document.getElementById('edit-note').value = t.note||'';
+  document.getElementById('edit-modal').style.display='flex';
+}
+function closeModal(){ document.getElementById('edit-modal').style.display='none'; }
+function saveEdit(){
+  const id = parseInt(document.getElementById('edit-id').value);
+  const idx = trades.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  const profit = parseFloat(document.getElementById('edit-profit').value)||0;
+  trades[idx] = {...trades[idx],
+    pair: document.getElementById('edit-pair').value,
+    type: document.getElementById('edit-type').value,
+    entry: document.getElementById('edit-entry').value,
+    exit: document.getElementById('edit-exit').value,
+    gross: profit, net: profit,
+    profit,
+    note: document.getElementById('edit-note').value,
+  };
+  localStorage.setItem('tm_trades', JSON.stringify(trades));
+  renderTrades(); updateStats(); updateAccountDisplay(); closeModal();
+}
+
+function exportCSV(){
+  if(!trades.length){ alert('Eksport qilish uchun savdo yo\'q!'); return; }
+  const header = 'Juftlik,Yo\'nalish,Ochilish,Yopilish,Lot,TF,Sessiya,Natija,Gross PnL,Net PnL,Risk%,RR,Izoh,Sana';
+  const rows = trades.map(t=>[
+    t.pair, t.type, t.open||t.date, t.close||'',
+    t.lot||0.01, t.tf||'M1', t.session||'London', t.result||'',
+    t.gross??t.profit??0, t.net??t.gross??t.profit??0,
+    t.risk||20, t.rr||'4:1', '"'+(t.note||'')+'"', t.date
+  ].join(','));
+  const csv = [header,...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'tradematrix_savdolar.csv';
+  a.click();
 }
 
 function calcRisk(){
@@ -469,8 +955,48 @@ function renderSessions(){
   }).join('');
 }
 
+const PAIRS = {
+  major: ['EURUSD','GBPUSD','USDJPY','USDCHF','AUDUSD','USDCAD','NZDUSD'],
+  minor: ['EURGBP','EURJPY','GBPJPY','AUDJPY','CADJPY','CHFJPY','EURNZD','GBPAUD','EURCAD','AUDCAD','AUDNZD','GBPNZD','GBPCAD','NZDJPY'],
+  metal: ['XAUUSD','XAGUSD','XAUEUR','XPTUSD','XPDUSD','XAUAUD','XAUGBP'],
+  crypto: ['BTCUSD','ETHUSD','XRPUSD','BNBUSD','SOLUSD','ADAUSD','DOGEUSD','LTCUSD']
+};
+
+function updatePairList(){
+  const cat = document.getElementById('j-category').value;
+  const sel = document.getElementById('j-pair');
+  sel.innerHTML = PAIRS[cat].map(p=>`<option value="${p}">${p}</option>`).join('');
+}
+
+function calcRRValue(entry, sl, tp){
+  if(!entry||!sl||!tp) return null;
+  const risk = Math.abs(entry - sl);
+  const reward = Math.abs(tp - entry);
+  if(!risk) return null;
+  const rr = reward/risk;
+  return '1:'+rr.toFixed(2);
+}
+
+function autoCalcRR(){
+  const entry = parseFloat(document.getElementById('j-entry').value);
+  const sl = parseFloat(document.getElementById('j-sl').value);
+  const tp = parseFloat(document.getElementById('j-tp').value);
+  const rrVal = calcRRValue(entry, sl, tp);
+  const dispEl = document.getElementById('j-rr-display');
+  const badgeEl = document.getElementById('rr-auto-badge');
+  if(rrVal){
+    dispEl.value = rrVal;
+    badgeEl.textContent = '⚡ Auto';
+  } else {
+    dispEl.value = '';
+    badgeEl.textContent = '';
+  }
+}
+
 // Init
-renderTrades();updateStats();
+updatePairList();
+renderTrades(); updateStats(); updateAccountDisplay(); renderChart();
+setChartMode('cumulative');
 const saved=JSON.parse(localStorage.getItem('tm_goal')||'{}');
 if(saved.pct){
   document.getElementById('goal-percent').textContent=saved.pct+'%';
@@ -479,3 +1005,4 @@ if(saved.pct){
 </script>
 </body>
 </html>
+
