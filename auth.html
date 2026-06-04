@@ -6,47 +6,89 @@
 <title>TradeMatrix - Kirish</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0a0a0f; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-.card { background: #12121a; border: 1px solid #2a2a3a; border-radius: 16px; padding: 40px; width: 90%; max-width: 400px; }
-h1 { text-align: center; margin-bottom: 8px; color: #00d4aa; }
-p { text-align: center; color: #888; margin-bottom: 24px; }
-input { width: 100%; padding: 12px; background: #1a1a2e; border: 1px solid #2a2a3a; border-radius: 8px; color: #fff; margin-bottom: 12px; font-size: 14px; }
-button { width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 15px; cursor: pointer; margin-bottom: 8px; }
-.btn-login { background: #00d4aa; color: #000; font-weight: bold; }
-.btn-register { background: transparent; border: 1px solid #00d4aa; color: #00d4aa; }
-.msg { text-align: center; margin-top: 12px; font-size: 13px; color: #00d4aa; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080810;color:#fff;font-family:-apple-system,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:32px;width:100%;max-width:380px}
+.logo{text-align:center;font-size:22px;font-weight:700;margin-bottom:8px}
+.logo span{color:#7c3aed}
+.sub{text-align:center;color:#666;font-size:13px;margin-bottom:28px}
+.tabs{display:flex;background:rgba(255,255,255,0.05);border-radius:10px;padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:8px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;color:#666;border:none;background:none}
+.tab.active{background:#7c3aed;color:#fff;font-weight:600}
+input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px;margin-bottom:12px}
+input:focus{outline:none;border-color:#7c3aed}
+button.main{width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px}
+.msg{text-align:center;margin-top:12px;font-size:13px;min-height:20px}
+.err{color:#ff4444}
+.suc{color:#00d4aa}
 </style>
 </head>
 <body>
 <div class="card">
-  <h1>🚀 TradeMatrix</h1>
-  <p>Professional Trading Suite</p>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Parol">
-  <button class="btn-login" onclick="login()">Kirish</button>
-  <button class="btn-register" onclick="register()">Ro'yxatdan o'tish</button>
+  <div class="logo">Trade<span>Matrix</span></div>
+  <div class="sub">Professional Trading Suite</div>
+  
+  <div class="tabs">
+    <button class="tab active" id="tab-login" onclick="switchTab('login')">Kirish</button>
+    <button class="tab" id="tab-register" onclick="switchTab('register')">Ro'yxat</button>
+  </div>
+
+  <div id="form-login">
+    <input type="email" id="l-email" placeholder="Email">
+    <input type="password" id="l-pass" placeholder="Parol">
+    <button class="main" onclick="login()">Kirish →</button>
+  </div>
+
+  <div id="form-register" style="display:none">
+    <input type="email" id="r-email" placeholder="Email">
+    <input type="password" id="r-pass" placeholder="Parol (min 6 ta belgi)">
+    <button class="main" onclick="register()">Ro'yxatdan o'tish →</button>
+  </div>
+
   <div class="msg" id="msg"></div>
 </div>
+
 <script>
 const sb = window.supabase.createClient(
   'https://qvenslskfdhnjckzxipj.supabase.co',
   'sb_publishable_ArcsmhTCD4s1KSnYOlnyFQ_RvGqsW0P'
 );
+
+function switchTab(t) {
+  document.getElementById('form-login').style.display = t==='login'?'block':'none';
+  document.getElementById('form-register').style.display = t==='register'?'block':'none';
+  document.getElementById('tab-login').className = 'tab'+(t==='login'?' active':'');
+  document.getElementById('tab-register').className = 'tab'+(t==='register'?' active':'');
+  document.getElementById('msg').textContent = '';
+}
+
 async function login() {
-  const e = document.getElementById('email').value;
-  const p = document.getElementById('password').value;
-  const { error } = await sb.auth.signInWithPassword({ email: e, password: p });
-  if (error) { document.getElementById('msg').innerText = '❌ ' + error.message; }
-  else { window.location.href = '/'; }
+  const email = document.getElementById('l-email').value;
+  const pass = document.getElementById('l-pass').value;
+  const msg = document.getElementById('msg');
+  if(!email||!pass){msg.className='msg err';msg.textContent='❌ Email va parol kiriting!';return;}
+  msg.className='msg';msg.textContent='⏳ Kirilmoqda...';
+  const {error} = await sb.auth.signInWithPassword({email,password:pass});
+  if(error){msg.className='msg err';msg.textContent='❌ '+error.message;}
+  else{msg.className='msg suc';msg.textContent='✅ Muvaffaqiyatli!';setTimeout(()=>window.location.href='/dashboard.html',800);}
 }
+
 async function register() {
-  const e = document.getElementById('email').value;
-  const p = document.getElementById('password').value;
-  const { error } = await sb.auth.signUp({ email: e, password: p });
-  if (error) { document.getElementById('msg').innerText = '❌ ' + error.message; }
-  else { document.getElementById('msg').innerText = '✅ Email tasdiqlang!'; }
+  const email = document.getElementById('r-email').value;
+  const pass = document.getElementById('r-pass').value;
+  const msg = document.getElementById('msg');
+  if(!email||!pass){msg.className='msg err';msg.textContent='❌ Email va parol kiriting!';return;}
+  if(pass.length<6){msg.className='msg err';msg.textContent='❌ Parol kamida 6 ta belgi!';return;}
+  msg.className='msg';msg.textContent='⏳ Ro\'yxatdan o\'tilmoqda...';
+  const {error} = await sb.auth.signUp({email,password:pass});
+  if(error){msg.className='msg err';msg.textContent='❌ '+error.message;}
+  else{msg.className='msg suc';msg.textContent='✅ Muvaffaqiyatli! Dashboard ga o\'tilmoqda...';setTimeout(()=>window.location.href='/dashboard.html',1000);}
 }
+
+// Agar allaqachon login bo'lgan bo'lsa
+sb.auth.getSession().then(({data})=>{
+  if(data.session) window.location.href='/dashboard.html';
+});
 </script>
 </body>
 </html>
