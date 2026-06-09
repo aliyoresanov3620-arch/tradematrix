@@ -3,434 +3,405 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TradeMatrix Pro — Professional Trading Suite</title>
+<title>TradeMatrix Pro — Narxlar</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#080810;
-  --surface:rgba(255,255,255,0.04);
-  --border:rgba(255,255,255,0.08);
-  --purple:#7c3aed;
-  --purple-light:#a78bfa;
-  --purple-dim:rgba(124,58,237,0.15);
-  --green:#00d4aa;
-  --green-dim:rgba(0,212,170,0.15);
-  --text:#fff;
-  --muted:#888;
-  --dim:#444;
+  --bg:#080810;--purple:#7c3aed;--purple-light:#a78bfa;
+  --green:#00d4aa;--border:rgba(255,255,255,0.08);
+  --surface:rgba(255,255,255,0.04);--text:#fff;--muted:#888;
 }
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden}
 
-/* Glow blobs */
-.glow{position:fixed;width:500px;height:500px;border-radius:50%;filter:blur(110px);opacity:0.12;pointer-events:none;z-index:0}
-.glow1{background:var(--purple);top:-180px;left:-180px}
-.glow2{background:var(--green);bottom:-180px;right:-180px}
+.glow{position:fixed;border-radius:50%;filter:blur(110px);opacity:0.1;pointer-events:none;z-index:0}
+.glow1{width:600px;height:600px;background:var(--purple);top:-200px;left:-200px}
+.glow2{width:500px;height:500px;background:var(--green);bottom:-200px;right:-200px}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(8,8,16,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.logo{font-size:17px;font-weight:700;color:#fff;text-decoration:none}
-.logo span{color:var(--purple)}
-.nav-links{display:flex;gap:20px;align-items:center}
-.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;transition:color 0.2s}
-.nav-links a:hover{color:#fff}
-.nav-actions{display:flex;gap:8px}
-.btn-outline{background:transparent;color:#fff;padding:8px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,0.18);transition:border-color 0.2s}
-.btn-outline:hover{border-color:rgba(255,255,255,0.35)}
-.btn-primary{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;padding:8px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:opacity 0.2s}
-.btn-primary:hover{opacity:0.88}
+nav{position:fixed;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(8,8,16,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:100}
+.logo{font-size:17px;font-weight:800;text-decoration:none;color:#fff}
+.logo span{background:linear-gradient(135deg,#7c3aed,#00d4aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-right{display:flex;align-items:center;gap:10px}
+.btn-sm{padding:7px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;border:none;transition:opacity 0.2s}
+.btn-outline-nav{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+.btn-outline-nav:hover{border-color:rgba(255,255,255,0.2);color:#fff}
+.btn-purple-nav{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff}
+.btn-purple-nav:hover{opacity:0.88}
 
 /* HERO */
-.hero{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:120px 20px 72px}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.28);color:var(--purple-light);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:24px}
-.hero-title{font-size:44px;font-weight:800;line-height:1.1;margin-bottom:18px;max-width:640px;letter-spacing:-1px}
+.hero{position:relative;z-index:1;text-align:center;padding:100px 20px 60px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.25);color:var(--green);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:20px}
+.hero-title{font-size:40px;font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:14px}
 .hero-title span{background:linear-gradient(135deg,#7c3aed,#00d4aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{color:var(--muted);font-size:16px;max-width:460px;margin-bottom:36px;line-height:1.65}
-.hero-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.hero-sub{color:var(--muted);font-size:16px;max-width:440px;margin:0 auto 32px;line-height:1.65}
 
-/* Dashboard preview mock */
-.preview-wrap{margin-top:52px;position:relative;max-width:720px;width:100%}
-.preview-glow{position:absolute;inset:-1px;border-radius:21px;background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(0,212,170,0.2));filter:blur(1px)}
-.preview-box{position:relative;background:rgba(10,10,20,0.96);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:18px;overflow:hidden}
-.preview-dots{display:flex;gap:6px;margin-bottom:14px}
-.dot{width:10px;height:10px;border-radius:50%}
-.preview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
-.prev-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px}
-.prev-label{font-size:10px;color:var(--dim);margin-bottom:4px}
-.prev-val{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
-.prev-chg{font-size:11px;margin-top:3px}
-.up{color:var(--green)}
-.down{color:#ff4444}
-.preview-bar{height:52px;background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden;position:relative}
-.bar-fill{position:absolute;bottom:0;height:100%;background:linear-gradient(0deg,rgba(124,58,237,0.4),rgba(0,212,170,0.15));border-radius:10px}
+/* Toggle (oylik/yillik) */
+.billing-toggle{display:inline-flex;align-items:center;gap:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;padding:6px 14px;margin-bottom:48px;cursor:default}
+.toggle-label{font-size:13px;font-weight:600;color:var(--muted);transition:color 0.2s}
+.toggle-label.active{color:#fff}
+.toggle-switch{width:44px;height:24px;background:var(--purple);border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0}
+.toggle-knob{width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:transform 0.25s cubic-bezier(.34,1.56,.64,1)}
+.toggle-switch.yearly .toggle-knob{transform:translateX(20px)}
+.save-badge{background:rgba(0,212,170,0.15);border:1px solid rgba(0,212,170,0.25);color:var(--green);font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:4px}
 
-/* FEATURES */
-.section-wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:80px 20px}
-.sec-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.22);color:var(--purple-light);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;margin-bottom:14px}
-.sec-title{font-size:32px;font-weight:700;margin-bottom:10px;letter-spacing:-0.5px}
-.sec-sub{color:var(--muted);font-size:15px;margin-bottom:44px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6}
-.text-center{text-align:center}
-.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;transition:border-color 0.25s,background 0.25s;cursor:default}
-.feature-card:hover{border-color:rgba(124,58,237,0.35);background:rgba(124,58,237,0.05)}
-.feat-icon{width:40px;height:40px;border-radius:10px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
-.feat-icon svg{width:20px;height:20px;stroke:var(--purple-light);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.feature-card h3{font-size:14px;font-weight:600;margin-bottom:6px}
-.feature-card p{font-size:12px;color:#666;line-height:1.55}
+/* PRICING GRID */
+.pricing-wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 20px 80px}
+.pricing-grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:640px){.pricing-grid{grid-template-columns:repeat(3,1fr)}}
 
-/* STATS BAND */
-.stats-band{position:relative;z-index:1;background:rgba(255,255,255,0.025);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:32px 20px}
-.stats-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.stat-item{text-align:center}
-.stat-num{font-size:28px;font-weight:800;background:linear-gradient(135deg,#7c3aed,#00d4aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stat-lbl{font-size:11px;color:var(--dim);margin-top:3px;font-weight:500}
-
-/* PRICING */
-.pricing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.price-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px;text-align:center;position:relative;transition:border-color 0.25s}
-.price-card:hover{border-color:rgba(255,255,255,0.14)}
-.price-card.popular{border-color:rgba(124,58,237,0.45);background:rgba(124,58,237,0.04)}
-.popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;padding:3px 14px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-.price-name{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:6px}
-.price-amount{font-size:34px;font-weight:800;letter-spacing:-1px}
-.price-period{font-size:12px;color:var(--dim);margin-bottom:20px}
-.price-list{list-style:none;text-align:left;margin-bottom:22px;display:flex;flex-direction:column;gap:8px}
-.price-list li{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
-.price-list li svg{flex-shrink:0;width:14px;height:14px;stroke:var(--green);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-
-/* HOW IT WORKS */
-.steps-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.step-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative}
-.step-num{font-size:11px;font-weight:800;color:var(--purple-light);letter-spacing:1px;margin-bottom:10px;opacity:0.7}
-.step-icon{width:36px;height:36px;border-radius:9px;background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
-.step-icon svg{width:18px;height:18px;stroke:var(--green);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.step-card h4{font-size:13px;font-weight:600;margin-bottom:5px}
-.step-card p{font-size:11px;color:#666;line-height:1.55}
-
-/* FOOTER */
-footer{position:relative;z-index:1;padding:32px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:gap}
-.footer-logo{font-size:15px;font-weight:700}
-.footer-logo span{color:var(--purple)}
-footer p{font-size:12px;color:var(--dim)}
-
-/* Scroll animations */
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{opacity:0;animation:fadeUp 0.55s ease forwards}
-.delay-1{animation-delay:0.1s}
-.delay-2{animation-delay:0.2s}
-.delay-3{animation-delay:0.3s}
-.delay-4{animation-delay:0.4s}
-
-/* MOBILE */
-@media(max-width:640px){
-  .hero-title{font-size:30px}
-  .hero-sub{font-size:14px}
-  .preview-grid{grid-template-columns:1fr 1fr}
-  .features-grid{grid-template-columns:1fr}
-  .pricing-grid{grid-template-columns:1fr}
-  .steps-grid{grid-template-columns:1fr}
-  .stats-inner{grid-template-columns:repeat(2,1fr)}
-  .nav-links{display:none}
-  .footer-logo{display:none}
+.price-card{
+  background:rgba(12,12,22,0.8);
+  border:1.5px solid var(--border);
+  border-radius:20px;padding:28px 24px;
+  position:relative;
+  transition:border-color 0.25s,transform 0.25s,box-shadow 0.25s;
+  animation:fadeUp 0.5s cubic-bezier(.22,.68,0,1.2) both;
 }
+.price-card:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,0.4)}
+.price-card:nth-child(1){animation-delay:0.05s}
+.price-card:nth-child(2){animation-delay:0.12s}
+.price-card:nth-child(3){animation-delay:0.19s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+.price-card.popular{
+  border-color:rgba(124,58,237,0.55);
+  background:rgba(124,58,237,0.06);
+  box-shadow:0 0 0 1px rgba(124,58,237,0.15), 0 12px 40px rgba(124,58,237,0.12);
+}
+
+.popular-label{
+  position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#7c3aed,#5b21b6);
+  color:#fff;padding:4px 16px;border-radius:20px;
+  font-size:11px;font-weight:700;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(124,58,237,0.4);
+}
+
+.plan-icon{font-size:28px;margin-bottom:12px}
+.plan-name{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px}
+.plan-price{font-size:38px;font-weight:800;letter-spacing:-1.5px;margin-bottom:4px;transition:all 0.3s}
+.plan-price sup{font-size:18px;font-weight:700;vertical-align:super;margin-right:1px}
+.plan-price span{font-size:14px;font-weight:500;color:var(--muted)}
+.plan-price-orig{font-size:13px;color:#444;text-decoration:line-through;margin-bottom:4px;height:18px;transition:all 0.3s}
+.plan-desc{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5;min-height:36px}
+
+/* Feature list */
+.feat-list{list-style:none;margin-bottom:24px;display:flex;flex-direction:column;gap:9px}
+.feat-list li{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:#ccc;line-height:1.4}
+.feat-list li svg{flex-shrink:0;margin-top:1px;width:14px;height:14px;stroke:var(--green);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.feat-list li.no svg{stroke:#444}
+.feat-list li.no{color:#444}
+
+/* CTA button */
+.btn-plan{
+  width:100%;padding:12px;border-radius:12px;
+  font-size:14px;font-weight:700;cursor:pointer;
+  border:none;transition:opacity 0.2s,transform 0.1s;
+  text-decoration:none;display:block;text-align:center;
+}
+.btn-plan:active{transform:scale(0.98)}
+.btn-free{background:rgba(255,255,255,0.07);color:#fff;border:1.5px solid var(--border)}
+.btn-free:hover{background:rgba(255,255,255,0.1)}
+.btn-pro{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;box-shadow:0 4px 18px rgba(124,58,237,0.4)}
+.btn-pro:hover{opacity:0.9;box-shadow:0 6px 24px rgba(124,58,237,0.5)}
+.btn-elite{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;box-shadow:0 4px 18px rgba(245,158,11,0.35)}
+.btn-elite:hover{opacity:0.9}
+
+/* Current plan badge */
+.current-plan-badge{
+  display:none;padding:10px;border-radius:12px;
+  font-size:13px;font-weight:600;text-align:center;
+  background:rgba(0,212,170,0.1);border:1.5px solid rgba(0,212,170,0.25);color:var(--green);
+}
+
+/* FAQ */
+.faq-wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:0 20px 80px}
+.faq-title{font-size:26px;font-weight:700;text-align:center;margin-bottom:28px}
+.faq-item{border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.faq-q{padding:16px 18px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:600;background:var(--surface);transition:background 0.2s}
+.faq-q:hover{background:rgba(255,255,255,0.06)}
+.faq-arrow{transition:transform 0.25s;font-size:12px;color:var(--muted)}
+.faq-a{display:none;padding:0 18px 16px;font-size:13px;color:var(--muted);line-height:1.7}
+.faq-item.open .faq-arrow{transform:rotate(180deg)}
+.faq-item.open .faq-a{display:block}
+
+/* Guarantee */
+.guarantee{position:relative;z-index:1;max-width:600px;margin:0 auto 60px;padding:0 20px;text-align:center}
+.guarantee-card{background:rgba(0,212,170,0.05);border:1px solid rgba(0,212,170,0.2);border-radius:16px;padding:24px}
+.guarantee-icon{font-size:36px;margin-bottom:10px}
+.guarantee-title{font-size:18px;font-weight:700;margin-bottom:8px}
+.guarantee-text{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* Contact */
+.contact-wrap{text-align:center;padding-bottom:60px;position:relative;z-index:1;font-size:13px;color:var(--muted)}
+.contact-wrap a{color:var(--purple-light);text-decoration:none}
+
+/* Loading overlay */
+.loading-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);
+  z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px);
+}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:44px;height:44px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--purple);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
 <div class="glow glow1"></div>
 <div class="glow glow2"></div>
+<div class="loading-overlay" id="loading-overlay"><div class="loading-spinner"></div></div>
 
 <!-- NAV -->
 <nav>
-  <a class="logo" href="#">Trade<span>Matrix</span></a>
-  <div class="nav-links">
-    <a href="#features">Funksiyalar</a>
-    <a href="#how">Qanday ishlaydi</a>
-    <a href="#pricing">Narxlar</a>
-  </div>
-  <div class="nav-actions">
-    <a href="/auth.html" class="btn-outline">Kirish</a>
-    <a href="/auth.html" class="btn-primary">Boshlash</a>
+  <a class="logo" href="/">Trade<span>Matrix</span> Pro</a>
+  <div class="nav-right">
+    <a class="btn-sm btn-outline-nav" href="/auth.html" id="nav-login-btn">Kirish</a>
+    <a class="btn-sm btn-purple-nav" href="/auth.html" id="nav-signup-btn">Bepul boshlash</a>
   </div>
 </nav>
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-badge fade-up">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-    Professional Trading Suite v12.0
-  </div>
-  <h1 class="hero-title fade-up delay-1">Savdoni <span>Professional</span> Darajaga Olib Chiqing</h1>
-  <p class="hero-sub fade-up delay-2">Treyderlar uchun yaratilgan eng kuchli platforma. Tahlil, jurnal, psixologiya va ko'p narsa — bir joyda.</p>
-  <div class="hero-btns fade-up delay-3">
-    <a href="/auth.html" class="btn-primary">Bepul Boshlash</a>
-    <a href="/index.html" class="btn-outline">Demo Ko'rish</a>
-  </div>
+<div class="hero">
+  <div class="hero-badge">💰 Oddiy va shaffof narxlar</div>
+  <h1 class="hero-title">Trading jurnalingiz uchun<br><span>eng to'g'ri reja</span></h1>
+  <p class="hero-sub">Bepul boshlang, natijalar ko'rsatsa — yangilang. Hech qanday yashirin to'lov yo'q.</p>
 
-  <!-- Mock dashboard preview -->
-  <div class="preview-wrap fade-up delay-4">
-    <div class="preview-glow"></div>
-    <div class="preview-box">
-      <div class="preview-dots">
-        <div class="dot" style="background:#ff5f56"></div>
-        <div class="dot" style="background:#ffbd2e"></div>
-        <div class="dot" style="background:#27c93f"></div>
-      </div>
-      <div class="preview-grid">
-        <div class="prev-card">
-          <div class="prev-label">Umumiy Balans</div>
-          <div class="prev-val">$12,450</div>
-          <div class="prev-chg up">↑ +8.2%</div>
-        </div>
-        <div class="prev-card">
-          <div class="prev-label">Bu Oy</div>
-          <div class="prev-val">+$1,240</div>
-          <div class="prev-chg up">↑ +12.4%</div>
-        </div>
-        <div class="prev-card">
-          <div class="prev-label">Win Rate</div>
-          <div class="prev-val">68%</div>
-          <div class="prev-chg up">↑ +3%</div>
-        </div>
-      </div>
-      <!-- Fake mini chart bars -->
-      <div style="display:flex;align-items:flex-end;gap:4px;height:48px;padding:0 2px">
-        <div style="flex:1;background:rgba(124,58,237,0.25);border-radius:4px 4px 0 0;height:40%"></div>
-        <div style="flex:1;background:rgba(124,58,237,0.3);border-radius:4px 4px 0 0;height:55%"></div>
-        <div style="flex:1;background:rgba(0,212,170,0.3);border-radius:4px 4px 0 0;height:70%"></div>
-        <div style="flex:1;background:rgba(255,68,68,0.25);border-radius:4px 4px 0 0;height:35%"></div>
-        <div style="flex:1;background:rgba(0,212,170,0.35);border-radius:4px 4px 0 0;height:85%"></div>
-        <div style="flex:1;background:rgba(0,212,170,0.4);border-radius:4px 4px 0 0;height:100%"></div>
-        <div style="flex:1;background:rgba(0,212,170,0.3);border-radius:4px 4px 0 0;height:78%"></div>
-        <div style="flex:1;background:rgba(124,58,237,0.25);border-radius:4px 4px 0 0;height:60%"></div>
-        <div style="flex:1;background:rgba(0,212,170,0.35);border-radius:4px 4px 0 0;height:90%"></div>
-        <div style="flex:1;background:rgba(0,212,170,0.45);border-radius:4px 4px 0 0;height:95%"></div>
-        <div style="flex:1;background:rgba(0,212,170,0.3);border-radius:4px 4px 0 0;height:72%"></div>
-        <div style="flex:1;background:rgba(255,68,68,0.2);border-radius:4px 4px 0 0;height:42%"></div>
-      </div>
+  <!-- Billing toggle -->
+  <div class="billing-toggle">
+    <span class="toggle-label active" id="monthly-label">Oylik</span>
+    <div class="toggle-switch" id="billing-toggle" onclick="toggleBilling()">
+      <div class="toggle-knob"></div>
     </div>
-  </div>
-</section>
-
-<!-- STATS BAND -->
-<div class="stats-band">
-  <div class="stats-inner">
-    <div class="stat-item">
-      <div class="stat-num">5,000+</div>
-      <div class="stat-lbl">Faol Treyderlar</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">12+</div>
-      <div class="stat-lbl">Vosita va Modul</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">99.9%</div>
-      <div class="stat-lbl">Uptime</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">4.9★</div>
-      <div class="stat-lbl">Foydalanuvchi Bahosi</div>
-    </div>
+    <span class="toggle-label" id="yearly-label">Yillik <span class="save-badge">-20%</span></span>
   </div>
 </div>
 
-<!-- FEATURES -->
-<div class="section-wrap" id="features">
-  <div class="text-center">
-    <div class="sec-tag">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      FUNKSIYALAR
-    </div>
-    <h2 class="sec-title">Hammasi Bir Joyda</h2>
-    <p class="sec-sub">Professional treyderlar uchun zarur bo'lgan barcha vositalar</p>
-  </div>
-  <div class="features-grid">
-
-    <div class="feature-card">
-      <div class="feat-icon">
-        <!-- Book / Journal -->
-        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="16" y2="6"/><line x1="12" y1="10" x2="16" y2="10"/></svg>
-      </div>
-      <h3>Savdo Jurnali</h3>
-      <p>Har bir savdoni qayd eting, tahlil qiling va o'sishingizni kuzating. CSV eksport, filtrlar va PnL grafik.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feat-icon">
-        <!-- Shield / Risk -->
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <h3>Xavf Tahlili</h3>
-      <p>Risk management, pozitsiya hajmi va stop-loss kalkulyatori. Avtomatik lot hisoblash.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feat-icon">
-        <!-- Brain / Psychology -->
-        <svg viewBox="0 0 24 24"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>
-      </div>
-      <h3>Psixologiya Treker</h3>
-      <p>Savdo psixologiyangizni kuzating va yaxshilang. Kayfiyat jurnali va fikrlar.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feat-icon">
-        <!-- Chart bar / Martingale -->
-        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      </div>
-      <h3>Martingale Tahlili</h3>
-      <p>Klassik va Anti-Martingale strategiyalarini hisoblang. Monte Carlo simulatsiyasi.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feat-icon">
-        <!-- Target / Goals -->
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-      </div>
-      <h3>Moliyaviy Maqsadlar</h3>
-      <p>Oylik va yillik maqsadlar qo'ying, progress kuzating. Vizual progress bar.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feat-icon">
-        <!-- Clock / Session -->
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      </div>
-      <h3>Sessiya Soati</h3>
-      <p>Real vaqt sessiya kuzatuvi va avtomatik timezone. London, NY, Tokyo, Sydney.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feat-icon">
-        <!-- Newspaper / News -->
-        <svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
-      </div>
-      <h3>Bozor Yangiliklari</h3>
-      <p>Real vaqtdagi forex, crypto va aksiya yangiliklari. Iqtisodiy taqvim va sentiment.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feat-icon">
-        <!-- Layers / Strategy -->
-        <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-      </div>
-      <h3>Strategiya Solishtirish</h3>
-      <p>Bir nechta strategiyani solishtiring, EV va equity grafiklarini ko'ring.</p>
-    </div>
-
-  </div>
-</div>
-
-<!-- HOW IT WORKS -->
-<div class="section-wrap" id="how" style="padding-top:0">
-  <div class="text-center">
-    <div class="sec-tag">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      QANDAY ISHLAYDI
-    </div>
-    <h2 class="sec-title">3 Qadamda Boshlang</h2>
-    <p class="sec-sub">Bir necha daqiqada professional treyder sifatida ishlashni boshlang</p>
-  </div>
-  <div class="steps-grid">
-    <div class="step-card">
-      <div class="step-num">01</div>
-      <div class="step-icon">
-        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <h4>Ro'yxatdan O'ting</h4>
-      <p>Bepul hisob oching. Email va parol — 30 soniya ichida tayyor.</p>
-    </div>
-    <div class="step-card">
-      <div class="step-num">02</div>
-      <div class="step-icon">
-        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-      </div>
-      <h4>Hisobingizni Sozlang</h4>
-      <p>Broker, hisob turi va boshlang'ich balansni kiriting.</p>
-    </div>
-    <div class="step-card">
-      <div class="step-num">03</div>
-      <div class="step-icon">
-        <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-      </div>
-      <h4>Savdolarni Kuzating</h4>
-      <p>Savdolaringizni qo'shing, statistikangizni kuzating va o'sing.</p>
-    </div>
-  </div>
-</div>
-
-<!-- PRICING -->
-<div class="section-wrap" id="pricing" style="padding-top:0">
-  <div class="text-center">
-    <div class="sec-tag">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-      NARXLAR
-    </div>
-    <h2 class="sec-title">Siz Uchun Mos Tarif</h2>
-    <p class="sec-sub">Oylik obuna — istalgan vaqt bekor qilish mumkin</p>
-  </div>
+<!-- PRICING CARDS -->
+<div class="pricing-wrap">
   <div class="pricing-grid">
 
-    <div class="price-card">
-      <div class="price-name">FREE</div>
-      <div class="price-amount">0</div>
-      <div class="price-period">so'm / oy</div>
-      <ul class="price-list">
-        <li>
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Margin Kalkulyatori
-        </li>
-        <li>
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Sessiya Soati
-        </li>
-        <li>
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Savdo Jurnali (10 ta)
-        </li>
+    <!-- FREE -->
+    <div class="price-card" id="card-free">
+      <div class="plan-icon">📊</div>
+      <div class="plan-name">Free</div>
+      <div class="plan-price-orig"></div>
+      <div class="plan-price"><sup>$</sup>0<span>/oy</span></div>
+      <div class="plan-desc">Boshlovchilar uchun — hisob kerak emas.</div>
+      <ul class="feat-list">
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 50 ta savdo yozuvi</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Asosiy statistika</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> PnL kalender</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Asosiy grafiklar</li>
+        <li class="no"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> AI tahlil</li>
+        <li class="no"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Real-time yangiliklar</li>
+        <li class="no"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> CSV export</li>
       </ul>
-      <a href="/auth.html" class="btn-outline" style="display:block;text-align:center;padding:10px">Boshlash</a>
+      <div class="current-plan-badge" id="free-current">✅ Hozirgi rejaingiz</div>
+      <button class="btn-plan btn-free" id="btn-free" onclick="choosePlan('free')">Bepul boshlash</button>
     </div>
 
-    <div class="price-card popular">
-      <div class="popular-badge">Mashhur</div>
-      <div class="price-name">BASIC</div>
-      <div class="price-amount">50,000</div>
-      <div class="price-period">so'm / oy</div>
-      <ul class="price-list">
-        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Barcha Free imkoniyatlar</li>
-        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Savdo Jurnali (∞)</li>
-        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Xavf Tahlili</li>
-        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Martingale Tahlili</li>
+    <!-- PRO -->
+    <div class="price-card popular" id="card-pro">
+      <div class="popular-label">🔥 Eng ommabop</div>
+      <div class="plan-icon">⭐</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price-orig" id="pro-orig"></div>
+      <div class="plan-price" id="pro-price"><sup>$</sup><span id="pro-amount">19</span><span>/oy</span></div>
+      <div class="plan-desc">Jiddiy treyderlar uchun — cheksiz imkoniyatlar.</div>
+      <ul class="feat-list">
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Cheksiz savdo yozuvlari</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> To'liq statistika & grafiklar</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> PnL kalender</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> AI savdo tahlili</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Real-time forex yangiliklari</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> CSV/Excel export</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Screenshot yuklash</li>
       </ul>
-      <a href="/auth.html" class="btn-primary" style="display:block;text-align:center;padding:10px">Tanlash</a>
+      <div class="current-plan-badge" id="pro-current">✅ Hozirgi rejaingiz</div>
+      <button class="btn-plan btn-pro" id="btn-pro" onclick="choosePlan('pro')">Pro ni tanlash →</button>
     </div>
 
-    <div class="price-card">
-      <div class="price-name">PRO</div>
-      <div class="price-amount">120,000</div>
-      <div class="price-period">so'm / oy</div>
-      <ul class="price-list">
-        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Barcha Basic imkoniyatlar</li>
-        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Psixologiya Treker</li>
-        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Moliyaviy Maqsadlar</li>
-        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Ehtimollik Nazariyasi</li>
+    <!-- ELITE -->
+    <div class="price-card" id="card-elite">
+      <div class="plan-icon">💎</div>
+      <div class="plan-name">Elite</div>
+      <div class="plan-price-orig" id="elite-orig"></div>
+      <div class="plan-price" id="elite-price"><sup>$</sup><span id="elite-amount">49</span><span>/oy</span></div>
+      <div class="plan-desc">Professional treyderlar va prop treyderlar uchun.</div>
+      <ul class="feat-list">
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Pro dagi hamma narsa</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 10 ta hisob boshqaruvi</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Telegram signal boti</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Haftalik AI hisobot</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Ustuvor qo'llab-quvvatlash</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> White-label imkoniyati</li>
+        <li><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> API kirish</li>
       </ul>
-      <a href="/auth.html" class="btn-primary" style="display:block;text-align:center;padding:10px">Tanlash</a>
+      <div class="current-plan-badge" id="elite-current">✅ Hozirgi rejaingiz</div>
+      <button class="btn-plan btn-elite" id="btn-elite" onclick="choosePlan('elite')">Elite ni tanlash →</button>
     </div>
 
   </div>
 </div>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">Trade<span>Matrix</span></div>
-  <p>© 2025 TradeMatrix Pro. Barcha huquqlar himoyalangan.</p>
-  <div style="display:flex;gap:12px">
-    <a href="/auth.html" style="font-size:12px;color:var(--dim);text-decoration:none">Kirish</a>
-    <a href="/auth.html" style="font-size:12px;color:var(--purple-light);text-decoration:none">Boshlash →</a>
+<!-- GUARANTEE -->
+<div class="guarantee">
+  <div class="guarantee-card">
+    <div class="guarantee-icon">🛡️</div>
+    <div class="guarantee-title">14 kunlik to'liq kafolat</div>
+    <div class="guarantee-text">Agar 14 kun ichida qoniqmasangiz — hech qanday savol bermay to'lovingizni qaytaramiz. Xavfsizchunar qo'llang.</div>
   </div>
-</footer>
+</div>
 
+<!-- FAQ -->
+<div class="faq-wrap">
+  <div class="faq-title">Ko'p so'raladigan savollar</div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Bepul rejadan Pro ga o'tganda ma'lumotlarim saqlanadimi? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Ha, albatta! Barcha savdo yozuvlaringiz, grafiklar va sozlamalaringiz to'liq saqlanib qoladi. Hech narsa o'chib ketmaydi.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">To'lovni qanday amalga oshiraman? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Xalqaro kartalar (Visa, Mastercard) orqali to'lov qilish mumkin. O'zbekiston foydalanuvchilari uchun Payme va Click ham qo'llab-quvvatlanadi.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Yillik rejada qancha tejash mumkin? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Yillik rejalarda 20% chegirma beriladi. Pro uchun $183 o'rniga $146 to'laysiz — oyiga $15.3. Elite uchun esa $470 o'rniga $376.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Obunani bekor qilish mumkinmi? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Ha, istalgan vaqtda bekor qilishingiz mumkin. Bekor qilgandan keyin ham davr tugaguncha Pro imkoniyatlaridan foydalanaverasiz.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">Free rejada nechta savdo yozsa bo'ladi? <span class="faq-arrow">▼</span></div>
+    <div class="faq-a">Bepul rejada 50 ta savdo yozish mumkin. Bu ko'pchilik boshlang'ich treyderlar uchun yetarli. Ko'proq kerak bo'lsa — Pro ga o'ting.</div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact-wrap">
+  Savollaringiz bormi? <a href="mailto:support@tradematrixpro.com">support@tradematrixpro.com</a> ga yozing yoki <a href="https://t.me/tradematrixpro" target="_blank">Telegram</a>da murojaat qiling.
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qvenslskfdhnjckzxipj.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_ArcsmhTCD4s1KSnYOlnyFQ_RvGqsW0P';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ─── Narxlar ─────────────────────────────────────────────────────────────────
+const PRICES = {
+  pro:   { monthly: 19, yearly: 15 },
+  elite: { monthly: 49, yearly: 39 },
+};
+
+let isYearly = false;
+let currentUserPlan = null;
+
+// ─── Billing toggle ────────────────────────────────────────────────────────
+function toggleBilling() {
+  isYearly = !isYearly;
+  document.getElementById('billing-toggle').classList.toggle('yearly', isYearly);
+  document.getElementById('monthly-label').classList.toggle('active', !isYearly);
+  document.getElementById('yearly-label').classList.toggle('active', isYearly);
+  updatePrices();
+}
+
+function updatePrices() {
+  ['pro', 'elite'].forEach(plan => {
+    const p = PRICES[plan];
+    const current = isYearly ? p.yearly : p.monthly;
+    const original = isYearly ? p.monthly : null;
+
+    document.getElementById(`${plan}-amount`).textContent = current;
+    const origEl = document.getElementById(`${plan}-orig`);
+    if (original && isYearly) {
+      origEl.textContent = `$${original}/oy o'rniga`;
+    } else {
+      origEl.textContent = '';
+    }
+  });
+}
+
+// ─── Auth holat ────────────────────────────────────────────────────────────
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+
+  // Login tugmasini dashboard ga o'zgartirish
+  document.getElementById('nav-login-btn').textContent = 'Dashboard';
+  document.getElementById('nav-login-btn').href = '/dashboard.html';
+  document.getElementById('nav-signup-btn').style.display = 'none';
+
+  // Foydalanuvchi planini ko'rsatish
+  const { data } = await sb
+    .from('subscriptions')
+    .select('plan, status')
+    .eq('user_id', session.user.id)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  currentUserPlan = data?.plan || 'free';
+  highlightCurrentPlan();
+}
+
+function highlightCurrentPlan() {
+  ['free', 'pro', 'elite'].forEach(plan => {
+    const badge = document.getElementById(`${plan}-current`);
+    const btn = document.getElementById(`btn-${plan}`);
+    if (plan === currentUserPlan) {
+      if (badge) badge.style.display = 'block';
+      if (btn) btn.style.display = 'none';
+    }
+  });
+}
+
+// ─── Plan tanlash ──────────────────────────────────────────────────────────
+async function choosePlan(plan) {
+  const { data: { session } } = await sb.auth.getSession();
+
+  if (!session) {
+    // Login sahifasiga o'tkazish
+    window.location.href = `/auth.html?redirect=pricing&plan=${plan}`;
+    return;
+  }
+
+  if (plan === 'free') {
+    window.location.href = '/dashboard.html';
+    return;
+  }
+
+  // To'lov sahifasiga o'tkazish
+  // Hozircha: Telegram orqali buyurtma
+  const billing = isYearly ? 'yearly' : 'monthly';
+  const price = PRICES[plan][isYearly ? 'yearly' : 'monthly'];
+  const msg = encodeURIComponent(
+    `Salom! ${plan.toUpperCase()} rejasiga o'tmoqchiman.\n` +
+    `Rejа: ${plan} | To'lov: ${billing} | Narx: $${price}/oy\n` +
+    `Email: ${session.user.email}`
+  );
+  window.open(`https://t.me/tradematrixpro?text=${msg}`, '_blank');
+
+  // TODO: Stripe to'lov ulanganda:
+  // const { data } = await sb.functions.invoke('create-checkout', {
+  //   body: { plan, billing, userId: session.user.id }
+  // });
+  // window.location.href = data.checkoutUrl;
+}
+
+// ─── FAQ ────────────────────────────────────────────────────────────────────
+function toggleFaq(el) {
+  el.classList.toggle('open');
+}
+
+// ─── Init ───────────────────────────────────────────────────────────────────
+checkAuth();
+</script>
 </body>
 </html>
+
