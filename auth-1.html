@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradeMatrix Pro — Kirish</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080810;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.bg-glow{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
+.bg-glow-1{width:500px;height:500px;background:rgba(124,58,237,0.12);top:-200px;left:-200px}
+.bg-glow-2{width:400px;height:400px;background:rgba(0,212,170,0.08);bottom:-150px;right:-150px}
+.auth-wrap{position:relative;z-index:1;width:100%;max-width:400px}
+.auth-card{background:rgba(12,12,22,0.96);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:36px 32px;backdrop-filter:blur(24px);box-shadow:0 32px 80px rgba(0,0,0,0.5);animation:cardIn 0.5s cubic-bezier(.22,.68,0,1.2) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(0.97)}to{opacity:1;transform:none}}
+.logo{text-align:center;font-size:24px;font-weight:800;margin-bottom:4px;letter-spacing:-0.5px}
+.logo span{background:linear-gradient(135deg,#7c3aed,#00d4aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-sub{text-align:center;font-size:12px;color:#888;margin-bottom:28px}
+.tabs{display:flex;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:4px;margin-bottom:24px;gap:4px}
+.tab{flex:1;padding:9px;text-align:center;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;color:#888;border:none;background:none;transition:all 0.2s}
+.tab.active{background:#7c3aed;color:#fff;box-shadow:0 2px 12px rgba(124,58,237,0.35)}
+.input-label{font-size:11px;font-weight:600;color:#888;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.input-group{margin-bottom:12px}
+.input{width:100%;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.09);border-radius:11px;padding:12px 14px;color:#fff;font-size:14px;transition:border-color 0.2s;outline:none}
+.input:focus{border-color:#7c3aed;background:rgba(124,58,237,0.06)}
+.input::placeholder{color:rgba(255,255,255,0.2)}
+.pw-wrap{position:relative}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;padding:4px;display:flex;align-items:center}
+.pw-toggle:hover{color:#fff}
+.btn-main{width:100%;padding:13px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity 0.2s,transform 0.1s;box-shadow:0 4px 20px rgba(124,58,237,0.35)}
+.btn-main:hover{opacity:0.92}
+.btn-main:active{transform:scale(0.98)}
+.btn-main:disabled{opacity:0.5;cursor:not-allowed}
+.btn-loader{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.msg{text-align:center;margin-top:14px;font-size:13px;min-height:20px;padding:8px 12px;border-radius:9px;display:none}
+.msg.show{display:block}
+.msg.err{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.2);color:#ff4444}
+.msg.suc{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:#00d4aa}
+.msg.inf{background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);color:#a78bfa}
+.forgot{text-align:right;margin-top:-6px;margin-bottom:10px;font-size:11px;color:#888;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.forgot:hover{color:#fff}
+.plan-note{background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.2);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:12px;color:#00d4aa}
+.verify-screen{display:none;text-align:center;padding:10px 0}
+.verify-icon{font-size:48px;margin-bottom:12px}
+.verify-title{font-size:18px;font-weight:700;margin-bottom:8px}
+.verify-sub{font-size:13px;color:#888;line-height:1.6;margin-bottom:20px}
+.btn-outline-sm{background:transparent;border:1.5px solid rgba(255,255,255,0.08);color:#888;padding:8px 18px;border-radius:9px;font-size:13px;cursor:pointer}
+.btn-outline-sm:hover{border-color:rgba(255,255,255,0.2);color:#fff}
+.auth-footer{text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,0.2)}
+.auth-footer a{color:#a78bfa;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="logo">Trade<span>Matrix</span> Pro</div>
+    <div class="logo-sub">Professional Trading Journal</div>
+
+    <div class="tabs" id="auth-tabs">
+      <button class="tab active" onclick="switchTab('login')">Kirish</button>
+      <button class="tab" onclick="switchTab('register')">Ro'yxat</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="form-login">
+      <div class="input-group">
+        <label class="input-label">Email</label>
+        <input class="input" type="email" id="l-email" placeholder="email@example.com" autocomplete="email">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Parol</label>
+        <div class="pw-wrap">
+          <input class="input" type="password" id="l-pass" placeholder="Parolingiz" style="padding-right:44px">
+          <button class="pw-toggle" onclick="togglePw('l-pass',this)" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="forgot" onclick="forgotPassword()">Parolni unutdim?</div>
+      <button class="btn-main" id="btn-login" onclick="login()">Kirish →</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="form-register" style="display:none">
+      <div class="plan-note">
+        ✅ <span>Ro'yxat <strong>bepul</strong> — 50 ta savdo yozib ko'ring!</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">To'liq ism</label>
+        <input class="input" type="text" id="r-name" placeholder="Ismingiz">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Email</label>
+        <input class="input" type="email" id="r-email" placeholder="email@example.com">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Parol</label>
+        <div class="pw-wrap">
+          <input class="input" type="password" id="r-pass" placeholder="Kamida 8 ta belgi" style="padding-right:44px">
+          <button class="pw-toggle" onclick="togglePw('r-pass',this)" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn-main" id="btn-register" onclick="register()">Ro'yxatdan o'tish →</button>
+    </div>
+
+    <!-- VERIFY -->
+    <div class="verify-screen" id="verify-screen">
+      <div class="verify-icon">📬</div>
+      <div class="verify-title">Email tekshiring!</div>
+      <div class="verify-sub" id="verify-text">Emailingizga tasdiqlash havolasi yuborildi.</div>
+      <button class="btn-outline-sm" onclick="resendVerification()">Qayta yuborish</button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+    <div class="auth-footer"><a href="/index.html">← Bosh sahifa</a></div>
+  </div>
+</div>
+
+<script>
+const sb = window.supabase.createClient(
+  'https://qvenslskfdhnjckzxipj.supabase.co',
+  'sb_publishable_ArcsmhTCD4s1KSnYOlnyFQ_RvGqsW0P'
+);
+
+// Allaqachon login bo'lgan bo'lsa dashboard ga
+sb.auth.getSession().then(({data})=>{
+  if(data.session) window.location.href='/dashboard.html';
+});
+
+let currentTab='login';
+
+function switchTab(t){
+  currentTab=t;
+  document.getElementById('form-login').style.display=t==='login'?'block':'none';
+  document.getElementById('form-register').style.display=t==='register'?'block':'none';
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
+  clearMsg();
+}
+
+function togglePw(id,btn){
+  const inp=document.getElementById(id);
+  inp.type=inp.type==='text'?'password':'text';
+}
+
+function showMsg(text,type='err'){
+  const el=document.getElementById('msg');
+  el.className='msg show '+type;
+  el.textContent=text;
+}
+function clearMsg(){
+  const el=document.getElementById('msg');
+  el.className='msg';
+  el.textContent='';
+}
+
+function setLoading(id,loading){
+  const btn=document.getElementById(id);
+  btn.disabled=loading;
+  btn.innerHTML=loading?'<span class="btn-loader"></span>Yuklanmoqda...':(id==='btn-login'?'Kirish →':'Ro\'yxatdan o\'tish →');
+}
+
+async function login(){
+  const email=document.getElementById('l-email').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  clearMsg();
+  if(!email) return showMsg('❌ Email kiriting!');
+  if(!pass) return showMsg('❌ Parol kiriting!');
+  setLoading('btn-login',true);
+  const {error}=await sb.auth.signInWithPassword({email,password:pass});
+  setLoading('btn-login',false);
+  if(error){
+    const m={'Invalid login credentials':'❌ Email yoki parol noto\'g\'ri!','Email not confirmed':'📬 Email tasdiqlanmagan!','Too many requests':'⏳ Ko\'p urinish. Kuting.'};
+    return showMsg(m[error.message]||'❌ '+error.message);
+  }
+  showMsg('✅ Muvaffaqiyatli!','suc');
+  setTimeout(()=>window.location.href='/dashboard.html',800);
+}
+
+async function register(){
+  const name=document.getElementById('r-name').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const pass=document.getElementById('r-pass').value;
+  clearMsg();
+  if(!name) return showMsg('❌ Ismingizni kiriting!');
+  if(!email||!email.includes('@')) return showMsg('❌ Email noto\'g\'ri!');
+  if(pass.length<8) return showMsg('❌ Parol kamida 8 ta belgi!');
+  setLoading('btn-register',true);
+  const {error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:location.origin+'/dashboard.html'}});
+  setLoading('btn-register',false);
+  if(error){
+    const m={'User already registered':'❌ Bu email allaqachon ro\'yxatdan o\'tgan!'};
+    return showMsg(m[error.message]||'❌ '+error.message);
+  }
+  document.getElementById('auth-tabs').style.display='none';
+  document.getElementById('form-register').style.display='none';
+  document.getElementById('verify-screen').style.display='block';
+  document.getElementById('verify-text').textContent='"'+email+'" ga tasdiqlash havolasi yuborildi.';
+  window._regEmail=email;
+}
+
+async function resendVerification(){
+  if(!window._regEmail) return;
+  const {error}=await sb.auth.resend({type:'signup',email:window._regEmail});
+  if(error) return showMsg('❌ '+error.message);
+  showMsg('📬 Qayta yuborildi!','suc');
+}
+
+async function forgotPassword(){
+  const email=document.getElementById('l-email').value.trim();
+  if(!email){showMsg('📧 Avval emailni kiriting','inf');return;}
+  showMsg('⏳ Yuborilmoqda...','inf');
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/reset-password.html'});
+  if(error) return showMsg('❌ '+error.message);
+  showMsg('📬 Parol tiklash havolasi yuborildi!','suc');
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter') currentTab==='login'?login():register();
+});
+
+// Auto-fill credentials
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('l-email').value='aliyoresanov3620@gmail.com';
+  document.getElementById('l-pass').value='TradematrixEA20';
+});
+</script>
+</body>
+</html>
