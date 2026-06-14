@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradeMatrix — Kirish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#08090b; --white:#f4f5f7; --silver:#c2c6cd; --mut:#7e838c; --mut2:#4d525a;
+  --line:rgba(255,255,255,.08); --line-s:rgba(255,255,255,.16); --glass:rgba(255,255,255,.04);
+  --err:#e23b42; --ok:#3ddc84;
+  --disp:'Space Grotesk',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);color:var(--white);min-height:100vh;overflow-x:hidden;
+  display:flex;justify-content:center;align-items:center;padding:24px;position:relative;
+  background:radial-gradient(1100px 700px at 50% -12%, #15171c, transparent 60%), linear-gradient(180deg,#0a0b0e,#050607);
+}
+/* 3D + texture layers */
+#stage{position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:0;animation:in 2s .2s ease forwards;pointer-events:none}
+@keyframes in{to{opacity:1}}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(120% 100% at 50% 40%, transparent 50%, rgba(0,0,0,.72) 100%)}
+.grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.05;animation:grain 1s steps(3) infinite;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+@keyframes grain{0%{transform:translate(0,0)}33%{transform:translate(-4%,3%)}66%{transform:translate(3%,-4%)}}
+
+/* card */
+.card{position:relative;z-index:5;width:100%;max-width:400px;padding:34px 30px 30px;
+  background:var(--glass);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(16px);
+  box-shadow:0 40px 100px -40px rgba(0,0,0,.8);
+  opacity:0;transform:translateY(20px);animation:rise .8s .25s cubic-bezier(.2,.9,.2,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+
+.brand{display:flex;align-items:center;justify-content:center;gap:9px;font-family:var(--disp);font-weight:600;font-size:21px;letter-spacing:-.01em}
+.mark{width:9px;height:9px;border-radius:2px;background:linear-gradient(135deg,#fff,#9aa0a8);box-shadow:0 0 12px rgba(255,255,255,.5)}
+.led{display:flex;justify-content:center;margin-top:12px}
+.led span{font-family:var(--disp),monospace;font-size:10.5px;letter-spacing:.28em;color:var(--mut);
+  padding:5px 12px;border:1px solid var(--line-s);border-radius:6px;background:rgba(255,255,255,.02)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:5px;margin:26px 0 22px}
+.tab{flex:1;padding:10px;text-align:center;border-radius:9px;cursor:pointer;font-family:inherit;font-size:13.5px;color:var(--mut);border:none;background:none;transition:.2s;font-weight:500}
+.tab:hover{color:var(--white)}
+.tab.active{background:linear-gradient(180deg,#fff,#cdd1d8);color:#0a0b0e;font-weight:600}
+
+/* fields */
+.field{display:flex;align-items:center;gap:10px;border:1px solid var(--line-s);border-radius:12px;padding:0 14px;margin-bottom:12px;color:var(--mut);transition:.2s}
+.field:focus-within{border-color:rgba(255,255,255,.5);box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+.field svg{flex:none}
+.field input{flex:1;background:none;border:0;outline:0;color:var(--white);font-family:inherit;font-size:14px;padding:13px 0}
+.field input::placeholder{color:var(--mut2)}
+
+/* button */
+button.main{width:100%;padding:13px;margin-top:6px;border:0;border-radius:12px;cursor:pointer;
+  font-family:inherit;font-size:14.5px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(180deg,#fff,#cdd1d8);color:#0a0b0e;box-shadow:0 8px 26px -10px rgba(255,255,255,.5);transition:.2s}
+button.main:hover{box-shadow:0 0 26px -4px rgba(255,255,255,.6);transform:translateY(-2px)}
+button.main:active{transform:translateY(0)}
+
+.msg{text-align:center;margin-top:14px;font-size:13px;min-height:20px;letter-spacing:.01em}
+.msg.err{color:var(--err)}
+.msg.suc{color:var(--ok)}
+.foot{text-align:center;margin-top:16px;font-size:11px;color:var(--mut2);letter-spacing:.04em}
+
+@media(max-width:440px){.card{padding:28px 22px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.card{opacity:1;transform:none}#stage{opacity:1}}
+</style>
+</head>
+<body>
+<canvas id="stage" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="card">
+  <div class="brand"><span class="mark"></span>TradeMatrix</div>
+  <div class="led"><span>THE&nbsp;2026&nbsp;REALITY</span></div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-login" onclick="switchTab('login')">Kirish</button>
+    <button class="tab" id="tab-register" onclick="switchTab('register')">Ro'yxat</button>
+  </div>
+
+  <div id="form-login">
+    <label class="field"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg><input type="email" id="l-email" placeholder="Email"></label>
+    <label class="field"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" id="l-pass" placeholder="Parol"></label>
+    <button class="main" onclick="login()">Kirish <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+  </div>
+
+  <div id="form-register" style="display:none">
+    <label class="field"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg><input type="email" id="r-email" placeholder="Email"></label>
+    <label class="field"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" id="r-pass" placeholder="Parol (min 6 ta belgi)"></label>
+    <button class="main" onclick="register()">Ro'yxatdan o'tish <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+  </div>
+
+  <div class="msg" id="msg"></div>
+  <div class="foot">256-BIT ENCRYPTED · SUPABASE AUTH</div>
+</div>
+
+<!-- 3D mono background -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  var canvas=document.getElementById("stage");
+  if(!window.THREE||!canvas) return;
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var scene=new THREE.Scene(); scene.fog=new THREE.FogExp2(0x06070a,0.055);
+  var camera=new THREE.PerspectiveCamera(46,2,0.1,200); camera.position.set(0,6.5,20); camera.lookAt(0,1.2,-6);
+  var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true}); renderer.setClearColor(0x000000,0);
+  function resize(){var w=canvas.clientWidth,h=canvas.clientHeight;renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+  var SX=110,SZ=72,WIDTH=90,DEPTH=60;
+  var surf=new THREE.PlaneGeometry(WIDTH,DEPTH,SX,SZ); surf.rotateX(-Math.PI/2);
+  var base=surf.attributes.position.array.slice();
+  var surfPts=new THREE.Points(surf,new THREE.PointsMaterial({color:0xd0d4db,size:0.085,transparent:true,opacity:0.9,sizeAttenuation:true,fog:true}));
+  surfPts.position.set(0,-2.5,-14); scene.add(surfPts);
+  var DN=900,dp=new Float32Array(DN*3);
+  for(var i=0;i<DN;i++){dp[i*3]=(Math.random()-0.5)*80;dp[i*3+1]=Math.random()*26;dp[i*3+2]=(Math.random()-0.5)*60-10;}
+  var dg=new THREE.BufferGeometry(); dg.setAttribute("position",new THREE.BufferAttribute(dp,3));
+  var dust=new THREE.Points(dg,new THREE.PointsMaterial({color:0xffffff,size:0.06,transparent:true,opacity:0.5,fog:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+  scene.add(dust);
+  var mx=0,my=0,tx=0,ty=0;
+  window.addEventListener("pointermove",function(e){var r=canvas.getBoundingClientRect();tx=((e.clientX-r.left)/r.width-0.5);ty=((e.clientY-r.top)/r.height-0.5);});
+  resize(); window.addEventListener("resize",resize);
+  var t=0,pos=surf.attributes.position,RIP=115;
+  function frame(){ t+=reduce?0:0.012;
+    if(!reduce){
+      mx+=(tx-mx)*0.09; my+=(ty-my)*0.09;
+      var cx=mx*(WIDTH*0.42), cz=-my*(DEPTH*0.42);
+      for(var i=0;i<pos.count;i++){
+        var x=base[i*3],z=base[i*3+2];
+        var amb=Math.sin(x*0.18+t)*0.85+Math.cos(z*0.22-t*0.8)*0.65;
+        var dx=x-cx,dz=z-cz,d2=dx*dx+dz*dz;
+        var rip=Math.exp(-d2/RIP)*2.7*Math.sin(t*3.2-Math.sqrt(d2)*0.55);
+        pos.array[i*3+1]=amb+rip;
+      }
+      pos.needsUpdate=true;
+      dust.rotation.y+=0.0005; dust.position.x=mx*3.5; dust.position.y=-my*2.5;
+      camera.position.x=mx*9; camera.position.y=6.5-my*4; camera.lookAt(mx*1.5,1.2,-6);
+    }
+    renderer.render(scene,camera); requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+
+<!-- Supabase auth (logic unchanged) -->
+<script>
+const sb = window.supabase.createClient(
+  'https://qvenslskfdhnjckzxipj.supabase.co',
+  'sb_publishable_ArcsmhTCD4s1KSnYOlnyFQ_RvGqsW0P'
+);
+
+function switchTab(t) {
+  document.getElementById('form-login').style.display = t==='login'?'block':'none';
+  document.getElementById('form-register').style.display = t==='register'?'block':'none';
+  document.getElementById('tab-login').className = 'tab'+(t==='login'?' active':'');
+  document.getElementById('tab-register').className = 'tab'+(t==='register'?' active':'');
+  document.getElementById('msg').textContent = '';
+}
+
+async function login() {
+  const email = document.getElementById('l-email').value;
+  const pass = document.getElementById('l-pass').value;
+  const msg = document.getElementById('msg');
+  if(!email||!pass){msg.className='msg err';msg.textContent='Email va parolni kiriting';return;}
+  msg.className='msg';msg.textContent='Kirilmoqda…';
+  const {error} = await sb.auth.signInWithPassword({email,password:pass});
+  if(error){msg.className='msg err';msg.textContent=error.message;}
+  else{msg.className='msg suc';msg.textContent='Muvaffaqiyatli ✓';setTimeout(()=>window.location.href='dashboard.html',800);}
+}
+
+async function register() {
+  const email = document.getElementById('r-email').value;
+  const pass = document.getElementById('r-pass').value;
+  const msg = document.getElementById('msg');
+  if(!email||!pass){msg.className='msg err';msg.textContent='Email va parolni kiriting';return;}
+  if(pass.length<6){msg.className='msg err';msg.textContent='Parol kamida 6 ta belgi bo\'lsin';return;}
+  msg.className='msg';msg.textContent='Ro\'yxatdan o\'tilmoqda…';
+  const {error} = await sb.auth.signUp({email,password:pass});
+  if(error){msg.className='msg err';msg.textContent=error.message;}
+  else{msg.className='msg suc';msg.textContent='Muvaffaqiyatli — Dashboard ga o\'tilmoqda…';setTimeout(()=>window.location.href='dashboard.html',1000);}
+}
+
+// Enter bilan yuborish
+document.querySelectorAll('#form-login input').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter')login();}));
+document.querySelectorAll('#form-register input').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter')register();}));
+
+// Agar allaqachon login bo'lgan bo'lsa
+sb.auth.getSession().then(({data})=>{
+  if(data.session) window.location.href='dashboard.html';
+});
+</script>
+</body>
+</html>
